@@ -1,10 +1,6 @@
 import os
 from pydantic import BaseModel
 
-
-API_BASE = "https://openapi.vito.ai"
-
-
 class VitoConfig(BaseModel):
     client_id: str = os.getenv("RTZR_CLIENT_ID") or ""
     client_secret: str = os.getenv("RTZR_CLIENT_SECRET") or ""
