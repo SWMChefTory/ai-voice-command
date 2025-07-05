@@ -5,14 +5,12 @@ import uvicorn
 from src.config import settings
 from src.stt.router import router as stt_router
 
-# FastAPI 애플리케이션 생성
 app = FastAPI(
     title=settings.app_name,
     description="WebSocket 기반 실시간 STT(Speech-to-Text) 서비스",
     version=settings.version,
 )
 
-# CORS 설정
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
@@ -21,7 +19,6 @@ app.add_middleware(
     allow_headers=settings.allowed_headers,
 )
 
-# API 라우터 등록
 app.include_router(stt_router, prefix=settings.api_v1_str)
 
 @app.get("/health")
