@@ -1,13 +1,13 @@
 import uuid
 from fastapi import WebSocket
 import websockets
-from .models.stt_session import STTSession
+from .models.stt_session import STTSessionCache
 from .vito.client import VitoStreamingClient
 from .spring.client import SpringStreamClient
 
 class STTService:
     def __init__(self):
-        self.sessions = STTSession()
+        self.sessions = STTSessionCache()
         self.vito = VitoStreamingClient()
         self.spring = SpringStreamClient()
 
