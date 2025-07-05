@@ -3,7 +3,7 @@ from typing import Dict
 
 import websockets
 
-class STTSession:
+class STTSessionCache:
     def __init__(self):
         self.sessions : Dict[str, tuple[WebSocket, websockets.ClientConnection]] = {}
 
