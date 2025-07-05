@@ -3,8 +3,6 @@ from pydantic import BaseModel
 
 
 API_BASE = "https://openapi.vito.ai"
-SAMPLE_RATE = 16000
-BYTES_PER_SAMPLE = 2
 
 
 class VitoConfig(BaseModel):

@@ -5,21 +5,20 @@ import websockets
 import logging
 from requests import Session
 from typing import Any, Dict, Optional, cast
-from .config import API_BASE, SAMPLE_RATE, vito_config
+from .config import vito_config
 
 
-Token = Dict[str, Any]
 
 class VitoStreamingClient:
     def __init__(self):
         super().__init__()
         self._logger = logging.getLogger(__name__)
         self._sess = Session()
-        self._token: Optional[Token] = None
+        self._token: Optional[Dict[str, Any]] = None
         self._lock = asyncio.Lock()
-        self.sample_rate = SAMPLE_RATE
+        self.sample_rate = vito_config.sample_rate
 
-    async def _access_token(self) -> Token:
+    async def _access_token(self) -> Dict[str, Any]:
         async with self._lock:
             if (
                 self._token is None
@@ -29,7 +28,7 @@ class VitoStreamingClient:
                 resp = await loop.run_in_executor(
                     None,
                     lambda: self._sess.post(
-                        f"{API_BASE}/v1/authenticate",
+                        f"{vito_config.api_base}/v1/authenticate",
                         data={
                             "client_id": vito_config.client_id,
                             "client_secret": vito_config.client_secret,
@@ -39,7 +38,7 @@ class VitoStreamingClient:
                 resp.raise_for_status()
                 self._token = resp.json()
             assert self._token is not None 
-            return cast(Token, self._token)
+            return self._token
 
     async def connect(self) -> websockets.ClientConnection:
         token = await self._access_token()
@@ -51,7 +50,7 @@ class VitoStreamingClient:
                 use_profanity_filter=vito_config.use_profanity_filter,
             )
         uri = "wss://{}/v1/transcribe:streaming?{}".format(
-            API_BASE.split("://")[1], "&".join(map("=".join, qs.items()))
+            vito_config.api_base.split("://")[1], "&".join(map("=".join, qs.items()))
         )
         hdr = {"Authorization": f"bearer {token['access_token']}"}
         try:
