@@ -11,23 +11,23 @@ class VoiceCommandService:
         self.client_session_service = client_session_service
         self.intent_service = intent_service
 
-    async def create_session(self, websocket: WebSocket):
-        session_id = await self.client_session_service.create_session(websocket)
+    async def initialize_session(self, client_websocket: WebSocket):
+        session_id = await self.client_session_service.create_session(client_websocket)
         try:
-            await self.stt_service.connect(session_id)
+            await self.stt_service.create_session(session_id)
         except Exception as e:
             await self.client_session_service.send_error(session_id, e)
             raise VoiceCommandException(VoiceCommandErrorCode.VOICE_COMMAND_SERVICE_ERROR, e)
         return session_id
 
-    async def create_recognition(self, session_id: str, chunk: bytes):
+    async def process_stt_results(self, session_id: str, chunk: bytes):
         try:
             await self.stt_service.stream_audio_chunk(session_id, chunk)
         except Exception as e:
             await self.client_session_service.send_error(session_id, e)
             raise VoiceCommandException(VoiceCommandErrorCode.VOICE_COMMAND_SERVICE_ERROR, e)
     
-    async def create_intent(self, session_id: str):
+    async def process_intents(self, session_id: str):
         try:
             async for stt_result in self.stt_service.get_result(session_id):
                 intent = await self.intent_service.get_intent(session_id, stt_result)
@@ -41,4 +41,4 @@ class VoiceCommandService:
 
     async def disconnect(self, session_id: str):
         await self.client_session_service.remove_session(session_id)
-        await self.stt_service.disconnect(session_id)
+        await self.stt_service.remove_session(session_id)

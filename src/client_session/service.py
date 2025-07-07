@@ -12,10 +12,10 @@ class ClientSessionService:
         self.repository = repository
         self.spring_client = spring_client
 
-    async def create_session(self, ws: WebSocket):
+    async def create_session(self, client_websocket: WebSocket):
         session_id = uuid.uuid4().hex
         try:
-            self.repository.create_session(session_id, ws)
+            self.repository.create_session(session_id, client_websocket)
             return session_id
         except SessionException as e:
             logger.error(f"[ClientSessionService] {e.code.value}: {e.original_exception}", exc_info=True)

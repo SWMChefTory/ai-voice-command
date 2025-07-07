@@ -16,7 +16,7 @@ class SessionRepository(ABC):
         pass
 
     @abstractmethod
-    def is_exist_session_id(self, session_id: str) -> bool:
+    def is_session_exists(self, session_id: str) -> bool:
         pass
 
 class SessionRepositoryImpl(SessionRepository):
@@ -32,5 +32,5 @@ class SessionRepositoryImpl(SessionRepository):
     def get_user_session(self, session_id: str) -> WebSocket:
         return self.sessions[session_id]
 
-    def is_exist_session_id(self, session_id: str) -> bool:
+    def is_session_exists(self, session_id: str) -> bool:
         return session_id in self.sessions

@@ -10,27 +10,27 @@ router = APIRouter(prefix="/voice-command", tags=["Voice Command"])
 
 @router.websocket("/ws")
 async def websocket_endpoint(
-    websocket: WebSocket,
+    client_websocket: WebSocket,
     voice_command_service: VoiceCommandService = Depends(voice_command_service),
 ):
-    await websocket.accept()
-    session_id = await voice_command_service.create_session(websocket)
+    await client_websocket.accept()
+    session_id = await voice_command_service.initialize_session(client_websocket)
 
     try:
         await asyncio.gather(
-            _client_to_stt(websocket, voice_command_service, session_id),
-            _stt_to_intent_to_client(voice_command_service, session_id),
+            _process_stt_results(client_websocket, voice_command_service, session_id),
+            _handle_recognition_flow(voice_command_service, session_id),
         )
     except Exception as e:
         logger.error(f"[VoiceCommandRouter] {e}", exc_info=True)
     finally:
         await voice_command_service.disconnect(session_id)
 
-async def _client_to_stt(ws: WebSocket,
+async def _process_stt_results(client_websocket: WebSocket,
                          service: VoiceCommandService,
                          session_id: str):
-    async for chunk in ws.iter_bytes():
-        await service.create_recognition(session_id, chunk)
+    async for chunk in client_websocket.iter_bytes():
+        await service.process_stt_results(session_id, chunk)
 
-async def _stt_to_intent_to_client(service: VoiceCommandService, session_id: str):
-    await service.create_intent(session_id)
+async def _handle_recognition_flow(service: VoiceCommandService, session_id: str):
+    await service.process_intents(session_id)

@@ -27,7 +27,7 @@ class StepsLoader:
     def __init__(self):
         pass
 
-    def _convertTotimeFormat(self, seconds: int) -> str:
+    def _convert_to_time_format(self, seconds: int) -> str:
         hours  = seconds//3600
         minutes = (seconds%3600)//60
         seconds = (seconds%60)
@@ -36,14 +36,14 @@ class StepsLoader:
     @lru_cache(maxsize=1)
     def load_steps(self):
         try:
-            with open("assets/steps.json", "r") as stepsJson:
-                steps = json.load(stepsJson)
+            with open("assets/steps.json", "r") as steps_json:
+                steps = json.load(steps_json)
 
                 result = ''
                 for i in range(0,len(steps)):
                     result+= f"""
                         step {i}
-                        timeline: {self._convertTotimeFormat(int(steps[i]["start"]))} --> {self._convertTotimeFormat(int(steps[i]["end"]))}
+                        timeline: {self._convert_to_time_format(int(steps[i]["start"]))} --> {self._convert_to_time_format(int(steps[i]["end"]))}
                         content: {steps[i]["text"]}
                         """
             return result
@@ -54,13 +54,13 @@ class PromptGenerator:
     def __init__(self):
         pass
         
-    def generate_prompt(self, caption: str, recipeSteps: str) -> str:
+    def generate_prompt(self, caption: str, recipe_steps: str) -> str:
         prompt = f"""
                     You MUST respond with ONLY ONE of these exact words: NEXT, PREV, STEPn, or EXTRA.
                     DO NOT write any explanations, greetings, or additional text.
 
                     **Available Recipe Steps:**
-                    {recipeSteps}
+                    {recipe_steps}
                     
                     **Video Captions:**
                     {caption}

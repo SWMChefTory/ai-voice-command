@@ -32,15 +32,15 @@ class GroqClient:
             raise _GroqClientException(IntentErrorCode.GROQ_REQUEST_SEND_ERROR, e)
 
 class SpringIntentClient:
-    async def send_intent(self, ws: WebSocket, text: str, base_intent : str):
+    async def send_intent(self, client_websocket: WebSocket, text: str, base_intent : str):
         try:
             intent_response = IntentResponse(intent=text, base_intent=base_intent)
-            await ws.send_json(SuccessResponse(intent_response).model_dump())
+            await client_websocket.send_json(SuccessResponse(intent_response).model_dump())
         except Exception as e:
             raise _SpringIntentClientException(IntentErrorCode.SPRING_INTENT_SEND_ERROR, e)
     
-    async def send_error(self, ws: WebSocket, error: Exception):
+    async def send_error(self, client_websocket: WebSocket, error: Exception):
         if isinstance(error, BusinessException):
-            await ws.send_json(BusinessErrorResponse(error).model_dump())
+            await client_websocket.send_json(BusinessErrorResponse(error).model_dump())
         else:
-            await ws.send_json(IntervalErrorResponse(error).model_dump())
+            await client_websocket.send_json(IntervalErrorResponse(error).model_dump())
