@@ -1,11 +1,8 @@
-import logging
+from uvicorn.main import logger
 from src.intent.client import GroqClient, SpringIntentClient
 from src.intent.exceptions import IntentErrorCode, IntentException
 from src.intent.utils import CaptionLoader, StepsLoader, PromptGenerator
 from src.client_session.repository import SessionRepository
-
-
-logger = logging.getLogger(__name__)
 
 class IntentService:
     def __init__(self, 

@@ -1,7 +1,7 @@
 
 
 import json
-import logging
+from uvicorn.main import logger
 import websockets
 
 from src.stt.exceptions import _VitoStreamingClientException, STTErrorCode
@@ -13,8 +13,6 @@ from typing import Any, AsyncIterator, Dict, Optional
 
 
 from .config import vito_config
-
-logger = logging.getLogger(__name__)
 
 class VitoStreamingClient:
     def __init__(self):
