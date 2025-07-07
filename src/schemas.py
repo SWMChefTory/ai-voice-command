@@ -1,6 +1,5 @@
 from typing import Generic, Optional, TypeVar
 from pydantic import BaseModel
-
 from src.exceptions import BusinessException
 
 T = TypeVar("T")

@@ -1,6 +1,4 @@
 from enum import Enum
-from fastapi import HTTPException
-from typing import Any, Dict, Optional
 
 
 class VoiceCommandErrorCode(Enum):

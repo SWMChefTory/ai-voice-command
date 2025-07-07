@@ -6,7 +6,7 @@ from src.deps import voice_command_service
 from src.service import VoiceCommandService
 
 
-router = APIRouter(prefix="/stt", tags=["Speech-to-Text"])
+router = APIRouter(prefix="/voice-command", tags=["Voice Command"])
 
 @router.websocket("/ws")
 async def websocket_endpoint(
