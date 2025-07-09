@@ -14,7 +14,7 @@ async def websocket_endpoint(
     voice_command_service: VoiceCommandService = Depends(voice_command_service),
 ):
     await client_websocket.accept()
-    session_id = await voice_command_service.initialize_session(client_websocket)
+    session_id = await voice_command_service.start_session(client_websocket)
 
     try:
         await asyncio.gather(
@@ -24,13 +24,13 @@ async def websocket_endpoint(
     except Exception as e:
         logger.error(f"[VoiceCommandRouter] {e}", exc_info=True)
     finally:
-        await voice_command_service.disconnect(session_id)
+        await voice_command_service.end_session(session_id)
 
 async def _process_stt_results(client_websocket: WebSocket,
                          service: VoiceCommandService,
                          session_id: str):
     async for chunk in client_websocket.iter_bytes():
-        await service.process_stt_results(session_id, chunk)
+        await service.stream_audio(session_id, chunk)
 
 async def _handle_recognition_flow(service: VoiceCommandService, session_id: str):
-    await service.process_intents(session_id)
+    await service.stream_intents(session_id)

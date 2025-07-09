@@ -3,50 +3,36 @@ import json
 import pysrt
 
 from src.intent.exceptions import _CaptionLoaderException, _StepsLoaderException, IntentErrorCode
-
+from src.intent.models import RecipeCaption, RecipeStep
 
 class CaptionLoader:
     def __init__(self):
         pass
 
+    @lru_cache(maxsize=1)
     def load_caption(self):
         try:
             subs = pysrt.open("assets/test.srt", encoding="utf-8")
-            lines = []
-            for sub in subs:
-                lines.append(f"{sub.start} --> {sub.end}")
-                lines.append(sub.text.replace("\n", " "))
-                lines.append("")     
-            return "\n".join(lines)
+            return [
+                RecipeCaption(int(sub.start.ordinal), int(sub.end.ordinal), sub.text)
+                for sub in subs
+            ]
         except Exception as e:
             raise _CaptionLoaderException(IntentErrorCode.CAPTION_LOAD_ERROR, e)
-
-
 
 class StepsLoader:
     def __init__(self):
         pass
 
-    def _convert_to_time_format(self, seconds: int) -> str:
-        hours  = seconds//3600
-        minutes = (seconds%3600)//60
-        seconds = (seconds%60)
-        return f'{hours}:{minutes}:{seconds}'
-
     @lru_cache(maxsize=1)
-    def load_steps(self):
+    def load_steps(self) -> list[RecipeStep]:
         try:
             with open("assets/steps.json", "r") as steps_json:
                 steps = json.load(steps_json)
-
-                result = ''
-                for i in range(0,len(steps)):
-                    result+= f"""
-                        step {i}
-                        timeline: {self._convert_to_time_format(int(steps[i]["start"]))} --> {self._convert_to_time_format(int(steps[i]["end"]))}
-                        content: {steps[i]["text"]}
-                        """
-            return result
+                return [
+                    RecipeStep(i, int(steps[i]["start"]), int(steps[i]["end"]), steps[i]["text"])
+                    for i in range(0,len(steps))
+                ]
         except Exception as e:
             raise _StepsLoaderException(IntentErrorCode.STEPS_LOAD_ERROR, e)
 
@@ -54,16 +40,16 @@ class PromptGenerator:
     def __init__(self):
         pass
         
-    def generate_prompt(self, caption: str, recipe_steps: str) -> str:
+    def generate_prompt(self, captions: list[RecipeCaption], recipe_steps: list[RecipeStep]) -> str:
         prompt = f"""
                     You MUST respond with ONLY ONE of these exact words: NEXT, PREV, STEPn, or EXTRA.
                     DO NOT write any explanations, greetings, or additional text.
 
                     **Available Recipe Steps:**
-                    {recipe_steps}
+                    {'\n'.join(map(str, recipe_steps))}
                     
                     **Video Captions:**
-                    {caption}
+                    {'\n'.join(map(str, captions))}
 
                     **RESPONSE RULES:**
                     - NEXT: for "다음", "다음 단계", "넘어가", "계속"

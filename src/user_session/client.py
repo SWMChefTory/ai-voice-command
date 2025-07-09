@@ -1,10 +1,22 @@
+from abc import ABC, abstractmethod
 from fastapi import WebSocket
 from fastapi.websockets import WebSocketState
 from uvicorn.main import logger
 from src.exceptions import BusinessException
 from src.schemas import BusinessErrorResponse, IntervalErrorResponse
 
-class SpringSessionClient:
+
+class UserSessionClient(ABC):
+
+    @abstractmethod
+    async def close(self, client_websocket: WebSocket):
+        pass
+
+    @abstractmethod
+    async def send_error(self, client_websocket: WebSocket, error: Exception):
+        pass
+
+class SpringSessionClient(UserSessionClient):
     async def close(self, client_websocket: WebSocket):
         try:
             logger.info(f"[SpringSessionClient] 세션 {client_websocket.client} 연결 상태: {client_websocket.state}")

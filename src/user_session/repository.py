@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Dict
 from fastapi import WebSocket
 
-class SessionRepository(ABC):
+class UserSessionRepository(ABC):
     @abstractmethod
     def create_session(self, session_id: str, websocket: WebSocket):
         pass
@@ -19,7 +19,7 @@ class SessionRepository(ABC):
     def is_session_exists(self, session_id: str) -> bool:
         pass
 
-class SessionRepositoryImpl(SessionRepository):
+class UserSessionRepositoryImpl(UserSessionRepository):
     def __init__(self):
         self.sessions : Dict[str, WebSocket] = {}
 

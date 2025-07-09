@@ -1,22 +1,26 @@
 from functools import lru_cache
 from src.service import VoiceCommandService
-from src.client_session.client import SpringSessionClient
-from src.intent.client import GroqClient, SpringIntentClient
+from src.user_session.client import SpringSessionClient, UserSessionClient
+from src.intent.client import GroqIntentClient, IntentClient, UserSessionClient as IntentUserSessionClient, SpringSessionClient as IntentSpringSessionClient
 from src.intent.utils import CaptionLoader, StepsLoader, PromptGenerator
-from src.client_session.repository import SessionRepository, SessionRepositoryImpl
-from src.client_session.service import ClientSessionService
-from src.stt.client import VitoStreamingClient
+from src.user_session.repository import UserSessionRepository, UserSessionRepositoryImpl
+from src.stt.client import STTClient, VitoStreamingClient
 from src.stt.repository import STTSessionRepository, STTSessionRepositoryImpl
 from src.stt.service import STTService
 from src.intent.service import IntentService
+from src.user_session.service import UserSessionService
 
 @lru_cache
-def spring_session_client() -> SpringSessionClient:  
+def user_session_client() -> UserSessionClient:  
     return SpringSessionClient()
 
 @lru_cache
-def groq_client() -> GroqClient:                 
-    return GroqClient()
+def intent_client() -> IntentClient:                 
+    return GroqIntentClient()
+
+@lru_cache
+def intent_user_session_client() -> IntentUserSessionClient:
+    return IntentSpringSessionClient()
 
 @lru_cache
 def caption_loader() -> CaptionLoader:           
@@ -31,11 +35,11 @@ def prompt_generator() -> PromptGenerator:
     return PromptGenerator()
 
 @lru_cache
-def spring_intent_client() -> SpringIntentClient:
-    return SpringIntentClient()
+def spring_session_client() -> SpringSessionClient:
+    return SpringSessionClient()
 
 @lru_cache
-def vito_streaming_client() -> VitoStreamingClient:
+def stt_client() -> STTClient:
     return VitoStreamingClient()
 
 @lru_cache
@@ -43,34 +47,38 @@ def stt_repository() -> STTSessionRepository:
     return STTSessionRepositoryImpl()
 
 @lru_cache
-def session_repository() -> SessionRepository:
-    return SessionRepositoryImpl()
+def user_session_repository() -> UserSessionRepository:
+    return UserSessionRepositoryImpl()
 
-def client_session_service() -> ClientSessionService:
-    return ClientSessionService(
-        repository      = session_repository(),
-        spring_client   = spring_session_client(),
+@lru_cache
+def user_session_service() -> UserSessionService:
+    return UserSessionService(
+        repository      = user_session_repository(),
+        client   = spring_session_client(),
     )
 
+@lru_cache
 def stt_service() -> STTService:
     return STTService(
         repository    = stt_repository(),
-        client = vito_streaming_client(),
+        client = stt_client(),
     )
 
+@lru_cache
 def intent_service() -> IntentService:
     return IntentService(
-        repository      = session_repository(),
-        spring_client   = spring_intent_client(),
-        groq_client     = groq_client(),
+        repository      = user_session_repository(),
+        user_session_client   = intent_user_session_client(),
+        intent_client   = intent_client(),
         caption_loader  = caption_loader(),
         steps_loader    = steps_loader(),
         prompt_generator= prompt_generator(),
     )
 
+@lru_cache
 def voice_command_service() -> VoiceCommandService:
     return VoiceCommandService(
         stt_service     = stt_service(),
-        client_session_service = client_session_service(),
+        user_session_service = user_session_service(),
         intent_service  = intent_service(),
     )
