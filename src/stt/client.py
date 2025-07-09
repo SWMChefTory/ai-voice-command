@@ -1,20 +1,37 @@
 
 
+from abc import ABC, abstractmethod
 import json
 from uvicorn.main import logger
-import websockets
+from websockets import ClientConnection, State
 
 from src.stt.exceptions import _VitoStreamingClientException, STTErrorCode
 import asyncio
 import time
-import websockets
 from requests import Session
-from typing import Any, AsyncIterator, Dict, Optional
-
+from typing import Any, AsyncIterator, Dict, Optional, AsyncGenerator
+import websockets
 
 from .config import vito_config
 
-class VitoStreamingClient:
+class STTClient(ABC):
+    @abstractmethod
+    async def connect(self) -> ClientConnection:
+        pass
+
+    @abstractmethod
+    async def close(self, client_websocket: ClientConnection):
+        pass
+
+    @abstractmethod
+    async def send_chunk(self, client_websocket: ClientConnection, chunk: bytes):
+        pass
+
+    @abstractmethod
+    async def get_result(self, client_websocket: ClientConnection) -> AsyncIterator[str]:
+        yield ""
+
+class VitoStreamingClient(STTClient):
     def __init__(self):
         super().__init__()
         self._sess = Session()
@@ -48,7 +65,7 @@ class VitoStreamingClient:
                     raise _VitoStreamingClientException(STTErrorCode.STT_CONNECTION_ERROR, e)
             return self._token
 
-    async def connect(self) -> websockets.ClientConnection:
+    async def connect(self) -> ClientConnection:
         token = await self._access_token()
         query_params = dict(
                 sample_rate=str(vito_config.sample_rate),
@@ -69,25 +86,23 @@ class VitoStreamingClient:
         except Exception as e:
             raise _VitoStreamingClientException(STTErrorCode.STT_CONNECTION_ERROR, e)
 
-    async def close(self, client_websocket: websockets.ClientConnection):
+    async def close(self, client_websocket: ClientConnection):
         logger.info(f"[VitoStreamingClient] 연결 상태: {client_websocket.state}")
-        if client_websocket.state == websockets.State.CLOSED:
+        if client_websocket.state == State.CLOSED:
             return
         await client_websocket.close()
 
-    async def send_chunk(self, client_websocket: websockets.ClientConnection, chunk: bytes):
+    async def send_chunk(self, client_websocket: ClientConnection, chunk: bytes):
         try:
             await client_websocket.send(chunk)
         except Exception as e:
             raise _VitoStreamingClientException(STTErrorCode.STT_STREAM_ERROR, e)
 
-    async def get_result(self, client_websocket: websockets.ClientConnection) -> AsyncIterator[str]:
+    async def get_result(self, client_websocket: ClientConnection) -> AsyncIterator[str]:
         async for msg in client_websocket:
             data = json.loads(msg)
-
             if not data.get("final"):
                 continue
             if not data.get("alternatives"):
                 continue
-
             yield data["alternatives"][0]["text"] 

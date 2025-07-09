@@ -2,17 +2,17 @@ import uuid
 from fastapi import WebSocket
 from uvicorn.main import logger
 from .exceptions import SessionErrorCode, SessionException
-from .repository import SessionRepository
+from .repository import UserSessionRepository
 
-from .client import SpringSessionClient
+from .client import UserSessionClient
 
 
-class ClientSessionService:
-    def __init__(self, repository: SessionRepository, spring_client: SpringSessionClient):
+class UserSessionService:
+    def __init__(self, repository: UserSessionRepository, client: UserSessionClient):
         self.repository = repository
-        self.spring_client = spring_client
+        self.client = client
 
-    async def create_session(self, client_websocket: WebSocket):
+    async def create(self, client_websocket: WebSocket):
         session_id = uuid.uuid4().hex
         try:
             self.repository.create_session(session_id, client_websocket)
@@ -24,11 +24,11 @@ class ClientSessionService:
             logger.error(f"[ClientSessionService]: {e}", exc_info=True)
             raise SessionException(SessionErrorCode.SESSION_SERVICE_ERROR, e)
             
-    async def remove_session(self, session_id: str):
-        spring_ws = self.repository.get_user_session(session_id)
-        await self.spring_client.close(spring_ws)
+    async def remove(self, session_id: str):
+        client_websocket = self.repository.get_user_session(session_id)
+        await self.client.close(client_websocket)
         self.repository.remove_session(session_id)
 
     async def send_error(self, session_id: str, error: Exception):
-        spring_ws = self.repository.get_user_session(session_id)
-        await self.spring_client.send_error(spring_ws, error)
+        client_websocket = self.repository.get_user_session(session_id)
+        await self.client.send_error(client_websocket, error)
