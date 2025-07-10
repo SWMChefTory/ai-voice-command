@@ -45,7 +45,7 @@ class TestVitoStreamingClient:
     async def collect_get_result_output(client, mock_websocket):
         """get_result의 출력을 수집하는 헬퍼 메서드"""
         results = []
-        async for result in client.get_result(mock_websocket):
+        async for result in client.recieve_result(mock_websocket):
             results.append(result)
         return results
 
@@ -119,7 +119,7 @@ class TestVitoStreamingClient:
                 """웹소켓 연결을 반환해야한다"""
                 with patch.object(client, '_access_token', return_value=valid_token):
                     with patch('websockets.connect', new=AsyncMock(return_value=mock_websocket)):
-                        connection = await client.connect()
+                        connection = await client.connect_session()
                         
                         assert connection == mock_websocket
 
@@ -132,7 +132,7 @@ class TestVitoStreamingClient:
                 with patch.object(client, '_access_token', return_value=valid_token):
                     with patch('websockets.connect', side_effect=Exception("Connection failed")):
                         with pytest.raises(_VitoStreamingClientException) as exc_info:
-                            await client.connect()
+                            await client.connect_session()
                         
                         assert exc_info.value.code == STTErrorCode.STT_CONNECTION_ERROR
 
@@ -147,7 +147,7 @@ class TestVitoStreamingClient:
                 """연결을 종료해야한다"""
                 mock_websocket.state = State.OPEN
                 
-                await client.close(mock_websocket)
+                await client.close_session(mock_websocket)
                 
                 mock_websocket.close.assert_called_once()
 
@@ -159,7 +159,7 @@ class TestVitoStreamingClient:
                 """close를 호출하지 않아야한다"""
                 mock_websocket.state = State.CLOSED
                 
-                await client.close(mock_websocket)
+                await client.close_session(mock_websocket)
                 
                 mock_websocket.close.assert_not_called()
 

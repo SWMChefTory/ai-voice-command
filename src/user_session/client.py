@@ -3,23 +3,28 @@ from fastapi import WebSocket
 from fastapi.websockets import WebSocketState
 from uvicorn.main import logger
 from src.exceptions import BusinessException
-from src.schemas import BusinessErrorResponse, IntervalErrorResponse
+from src.intent.models import Intent
+from src.intent.schemas import IntentResponse
+from src.schemas import BusinessErrorResponse, IntervalErrorResponse, SuccessResponse
 
 
 class UserSessionClient(ABC):
 
     @abstractmethod
-    async def close(self, client_websocket: WebSocket):
+    async def close_session(self, client_websocket: WebSocket):
         pass
 
     @abstractmethod
     async def send_error(self, client_websocket: WebSocket, error: Exception):
         pass
 
-class SpringSessionClient(UserSessionClient):
-    async def close(self, client_websocket: WebSocket):
+    @abstractmethod
+    async def send_result(self, client_websocket: WebSocket, result: Intent):
+        pass
+
+class UserSessionClientImpl(UserSessionClient):
+    async def close_session(self, client_websocket: WebSocket):
         try:
-            logger.info(f"[SpringSessionClient] 세션 {client_websocket.client} 연결 상태: {client_websocket.state}")
             if client_websocket.state != WebSocketState.CONNECTED:
                 return
             
@@ -33,3 +38,7 @@ class SpringSessionClient(UserSessionClient):
             await client_websocket.send_json(BusinessErrorResponse(error).model_dump())
         else:
             await client_websocket.send_json(IntervalErrorResponse(error).model_dump())
+            
+    async def send_result(self, client_websocket: WebSocket, result : Intent):
+        response = IntentResponse.from_intent(result)
+        await client_websocket.send_json(SuccessResponse(response).model_dump())

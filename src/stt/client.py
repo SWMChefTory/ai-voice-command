@@ -16,11 +16,11 @@ from .config import vito_config
 
 class STTClient(ABC):
     @abstractmethod
-    async def connect(self) -> ClientConnection:
+    async def connect_session(self) -> ClientConnection:
         pass
 
     @abstractmethod
-    async def close(self, client_websocket: ClientConnection):
+    async def close_session(self, client_websocket: ClientConnection):
         pass
 
     @abstractmethod
@@ -28,7 +28,7 @@ class STTClient(ABC):
         pass
 
     @abstractmethod
-    async def get_result(self, client_websocket: ClientConnection) -> AsyncIterator[str]:
+    async def recieve_result(self, client_websocket: ClientConnection) -> AsyncIterator[str]:
         yield ""
 
 class VitoStreamingClient(STTClient):
@@ -65,7 +65,7 @@ class VitoStreamingClient(STTClient):
                     raise _VitoStreamingClientException(STTErrorCode.STT_CONNECTION_ERROR, e)
             return self._token
 
-    async def connect(self) -> ClientConnection:
+    async def connect_session(self) -> ClientConnection:
         token = await self._access_token()
         query_params = dict(
                 sample_rate=str(vito_config.sample_rate),
@@ -86,8 +86,7 @@ class VitoStreamingClient(STTClient):
         except Exception as e:
             raise _VitoStreamingClientException(STTErrorCode.STT_CONNECTION_ERROR, e)
 
-    async def close(self, client_websocket: ClientConnection):
-        logger.info(f"[VitoStreamingClient] 연결 상태: {client_websocket.state}")
+    async def close_session(self, client_websocket: ClientConnection):
         if client_websocket.state == State.CLOSED:
             return
         await client_websocket.close()
@@ -98,7 +97,7 @@ class VitoStreamingClient(STTClient):
         except Exception as e:
             raise _VitoStreamingClientException(STTErrorCode.STT_STREAM_ERROR, e)
 
-    async def get_result(self, client_websocket: ClientConnection) -> AsyncIterator[str]:
+    async def recieve_result(self, client_websocket: ClientConnection) -> AsyncIterator[str]:
         async for msg in client_websocket:
             data = json.loads(msg)
             if not data.get("final"):

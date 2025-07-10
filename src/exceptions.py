@@ -1,4 +1,5 @@
 from enum import Enum
+from functools import wraps
 
 
 class VoiceCommandErrorCode(Enum):

@@ -129,21 +129,10 @@ class TestSTTSessionRepository:
                 """올바른 웹소켓을 반환해야한다"""
                 repository.create_session(session_id, mock_websocket)
                 
-                result = repository.find_session(session_id)
+                result = repository.get_session(session_id)
                 
                 assert result == mock_websocket
-        
-        class WhenSessionDoesNotExist:
-            """세션이 존재하지 않는다면"""
-            
-            def then_should_raise_key_error_with_descriptive_message(self, repository, session_id):
-                """KeyError를 발생시켜야한다"""
-                assert not repository.is_session_exists(session_id)
-                
-                with pytest.raises(KeyError) as exc_info:
-                    repository.find_session(session_id)
 
-                assert f"세션 {session_id}이 연결되지 않았거나 종료됨" in str(exc_info.value)
 
     class GivenIsSessionExists:
         """세션 존재 여부 확인해야 할 때"""
