@@ -12,7 +12,7 @@ class STTSessionRepository(ABC):
         pass
 
     @abstractmethod
-    def find_session(self, session_id: str) -> ClientConnection:
+    def get_session(self, session_id: str) -> ClientConnection:
         pass
 
     @abstractmethod
@@ -33,9 +33,6 @@ class STTSessionRepositoryImpl(STTSessionRepository):
     def is_session_exists(self, session_id: str) -> bool:
         return session_id in self.sessions
     
-    def find_session(self, session_id: str) -> ClientConnection:
-        try:
-            return self.sessions[session_id]
-        except KeyError:
-            raise KeyError(f"세션 {session_id}이 연결되지 않았거나 종료됨.")
+    def get_session(self, session_id: str) -> ClientConnection:
+        return self.sessions[session_id]
 
