@@ -1,6 +1,7 @@
 services:
   ai-voice-command:
     image: cheftory-ai-voice-command-server-dev:latest
+    container_name: ai-voice-command
     ports:
       - "8000"
     networks:
