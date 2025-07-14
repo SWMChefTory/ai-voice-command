@@ -10,7 +10,7 @@ RUN curl -Ls https://astral.sh/uv/install.sh | sh && \
 COPY ./pyproject.toml ./
 COPY ./uv.lock ./
 
-RUN uv venv && uv sync --all
+RUN uv venv && uv sync
 
 COPY ./assets .
 COPY ./src ./src
