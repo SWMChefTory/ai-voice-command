@@ -1,30 +1,17 @@
-from fastapi import HTTPException
-from typing import Any, Dict, Optional
+from enum import Enum
+from functools import wraps
 
 
-class BaseCustomException(Exception):    
-    def __init__(
-        self,
-        message: str = "An error occurred",
-        status_code: int = 500,
-        details: Optional[Dict[str, Any]] = None
-    ):
-        self.message = message
-        self.status_code = status_code
-        self.details = details or {}
-        super().__init__(self.message)
+class VoiceCommandErrorCode(Enum):
+    VOICE_COMMAND_SERVICE_ERROR = "음성 명령 서비스 오류"
 
+class BusinessException(Exception):
+    def __init__(self, code: Enum, original_exception: Exception):
+        self.code = code
+        self.original_exception = original_exception
 
-class ValidationError(BaseCustomException):    
-    def __init__(self, message: str = "Validation failed", details: Optional[Dict[str, Any]] = None):
-        super().__init__(message, 400, details)
-
-
-def create_http_exception(custom_exception: BaseCustomException) -> HTTPException:
-    return HTTPException(
-        status_code=custom_exception.status_code,
-        detail={
-            "message": custom_exception.message,
-            "details": custom_exception.details
-        }
-    ) 
+class VoiceCommandException(BusinessException):
+    def __init__(self, code: Enum, original_exception: Exception):
+        super().__init__(code, original_exception)
+        self.code = code
+        self.original_exception = original_exception
