@@ -1,74 +1,59 @@
+# settings.py
 import os
 from typing import List
-from dotenv import load_dotenv
-from pydantic import BaseModel
+from enum import Enum
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
 
-class BaseSettings(BaseModel):
-    app_name: str = "STT FastAPI Service"
-    version: str = "1.0.0"
-    api_v1_str: str = "/papi/v1"
-    
+
+class AppEnv(str, Enum):
+    local = "local"
+    dev   = "dev"
+    prod  = "prod"
+
+
+class Settings(BaseSettings):
+    app_name: str = "Voice Command FastAPI Service"
+    version: str  = "1.0.0"
+    api_v1_str: str = "/api/v1"
+
+    env: AppEnv = Field(default=AppEnv.local, alias="APP_ENV")
     debug: bool = False
-    environment: str = "base"
     host: str = "0.0.0.0"
     port: int = 8000
     log_level: str = "INFO"
-    
-    allowed_origins: List[str] = ["*"]
-    allowed_methods: List[str] = ["*"]
-    allowed_headers: List[str] = ["*"]
-    
-    class Config:
-        case_sensitive = False
+
+    allowed_origins: List[str] = Field(default_factory=lambda: ["*"])
+    allowed_methods: List[str] = Field(default_factory=lambda: ["*"])
+    allowed_headers: List[str] = Field(default_factory=lambda: ["*"])
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=False,
+        validate_assignment=True,
+        extra="ignore",
+    )
+
+    @property
+    def is_prod(self) -> bool:
+        return self.env is AppEnv.prod
 
 
-class LocalSettings(BaseSettings):
-    debug: bool = True
-    environment: str = "local"
-    log_level: str = "DEBUG"
-    host: str = "127.0.0.1"
-    port: int = 8000
-    
-    allowed_origins: List[str] = ["*"]
+def get_settings() -> Settings:
+    s = Settings()
 
+    # 환경별 오버라이드 예시
+    if s.env is AppEnv.local:
+        s.debug = True
+        s.log_level = "DEBUG"
+        s.host = "127.0.0.1"
+    elif s.env is AppEnv.dev:
+        s.debug = True
+        s.log_level = "DEBUG"
+    elif s.env is AppEnv.prod:
+        s.allowed_origins = [] 
 
-class DevelopmentSettings(BaseSettings):
-    debug: bool = True
-    environment: str = "development"
-    log_level: str = "DEBUG"
-    host: str = "0.0.0.0"
-    port: int = 8000
-    
-    allowed_origins: List[str] = ["*"]
-
-
-class ProductionSettings(BaseSettings):
-    debug: bool = False
-    environment: str = "production"
-    log_level: str = "INFO"
-    host: str = "0.0.0.0"
-    port: int = 8000
-    
-    allowed_origins: List[str] = []
-
-
-def get_settings() -> BaseSettings:
-    env = os.getenv("APP_ENV", "local").lower()
-    
-    # 환경별 .env 파일 로드
-    env_file = f".env.{env}"
-    if os.path.exists(env_file):
-        load_dotenv(dotenv_path=env_file)
-    
-    # 환경에 따른 설정 클래스 반환
-    if env == "prod":
-        return ProductionSettings()
-    elif env == "dev":
-        return DevelopmentSettings()
-    elif env == "local":
-        return LocalSettings()
-    else:
-        return LocalSettings()
+    return s
 
 
 settings = get_settings()

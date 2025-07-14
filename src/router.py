@@ -8,7 +8,7 @@ from src.service import VoiceCommandService
 
 router = APIRouter(prefix="/voice-command", tags=["Voice Command"])
 
-@router.websocket("/ws")
+@router.websocket("/wss")
 async def websocket_endpoint(
     client_websocket: WebSocket,
     voice_command_service: VoiceCommandService = Depends(voice_command_service),
