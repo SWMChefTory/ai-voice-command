@@ -12,6 +12,7 @@ COPY ./pdm.lock ./
 
 RUN uv venv && uv sync --all
 
-COPY ./app ./app
+COPY ./assets .
+COPY ./src ./src
 
-CMD ["uvicorn", "app.main:app"]
+CMD ["uvicorn", "src.main:app"]
