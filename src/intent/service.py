@@ -1,31 +1,44 @@
 from uvicorn.main import logger
-from src.intent.client import IntentClient
 from src.intent.exceptions import IntentErrorCode, IntentException
 from src.intent.models import Intent
-from src.intent.utils import CaptionLoader, StepsLoader, PromptGenerator
+from src.intent.utils import CaptionLoader, StepsLoader
+from src.intent.step_match.service import IntentStepMatchService
+from src.intent.pattern_match.service import IntentPatternMatchService
+from src.intent.classify.service import IntentClassifyService
 
 class IntentService:
     def __init__(self, 
-        intent_client: IntentClient,
         caption_loader: CaptionLoader,
         steps_loader: StepsLoader,
-        prompt_generator: PromptGenerator
+        intent_step_match_service: IntentStepMatchService,
+        intent_pattern_match_service: IntentPatternMatchService,
+        intent_classify_service: IntentClassifyService
     ):
-        self.intent_client = intent_client
         self.caption_loader = caption_loader
         self.steps_loader = steps_loader
-        self.prompt_generator = prompt_generator
-
+        self.intent_step_match_service = intent_step_match_service
+        self.intent_pattern_match_service = intent_pattern_match_service
+        self.intent_classify_service = intent_classify_service
+        
     async def analyze(self, base_intent: str) -> Intent:
         try:
             captions = self.caption_loader.load_caption()
             steps = self.steps_loader.load_steps()
-            prompt = self.prompt_generator.generate_prompt(captions, steps)
-            intent = self.intent_client.request_intent(user_prompt=base_intent, system_prompt=prompt)
-            return Intent(intent, base_intent)
+            
+            matched_intent = self.intent_pattern_match_service.match_intent(base_intent)
+            if matched_intent:
+                return Intent(matched_intent, base_intent)
+
+            filtered_intent = self.intent_classify_service.classify_intent(base_intent, len(steps))
+            if filtered_intent == "TIMESTAMP":
+                timestamp_intent = self.intent_step_match_service.step_match(base_intent, captions)
+                return Intent(timestamp_intent, base_intent)
+            else:
+                return Intent(filtered_intent, base_intent)
+            
         except IntentException as e:
             logger.error(f"[IntentService] {e.code.value}: {e.original_exception}", exc_info=True)
             raise IntentException(IntentErrorCode.INTENT_SERVICE_ERROR, e)
         except Exception as e:
-            logger.error(f"[IntentService]: {e}",exc_info=True)
+            logger.error(f"[IntentService]: {e}", exc_info=True)
             raise IntentException(IntentErrorCode.INTENT_SERVICE_ERROR, e)

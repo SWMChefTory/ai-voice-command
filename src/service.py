@@ -1,6 +1,4 @@
-from functools import wraps
 from fastapi import WebSocket
-from src.exceptions import VoiceCommandException, VoiceCommandErrorCode
 from src.intent.service import IntentService
 from src.stt.service import STTService
 from src.user_session.service import UserSessionService
@@ -25,8 +23,8 @@ class VoiceCommandService:
     @voice_command_error
     async def stream_intents(self, session_id: str):
         async for stt_result in self.stt_service.recieve(session_id):
-            intent = await self.intent_service.analyze(stt_result)
-            await self.user_session_service.send(session_id, intent)
+            intent = await self.intent_service.analyze(stt_result)       
+            await self.user_session_service.send_result(session_id, intent)
 
     async def end_session(self, session_id: str):
         await self.stt_service.remove(session_id)
