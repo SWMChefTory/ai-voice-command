@@ -15,4 +15,5 @@ RUN uv venv && uv sync
 COPY ./assets .
 COPY ./src ./src
 
+ENV PATH="/app/.venv/bin:$PATH"
 CMD ["uvicorn", "src.main:app"]
