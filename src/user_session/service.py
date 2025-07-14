@@ -27,6 +27,6 @@ class UserSessionService:
         client_websocket = self.repository.get_user_session(session_id)
         await self.client.send_error(client_websocket, error)
 
-    async def send(self, session_id: str, result: Intent):
+    async def send_result(self, session_id: str, result: Intent):
         client_websocket = self.repository.get_user_session(session_id)
         await self.client.send_result(client_websocket, result)
