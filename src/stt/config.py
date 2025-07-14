@@ -1,14 +1,15 @@
 import os
-from pydantic import BaseModel
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 COMMAND_KEYWORDS = [
     "다음", "다음 단계", "넘어가", "계속",
     "이전", "전 단계", "뒤로",
 ]
 
-class VitoConfig(BaseModel):
-    client_id: str = os.getenv("RTZR_CLIENT_ID") or ""
-    client_secret: str = os.getenv("RTZR_CLIENT_SECRET") or ""
+class VitoConfig(BaseSettings):
+    client_id: str = Field(default="", alias="RTZR_CLIENT_ID")
+    client_secret: str = Field(default="", alias="RTZR_CLIENT_SECRET")
     api_base: str = "https://openapi.vito.ai"
     model_name: str = "sommers_ko"
     sample_rate: int = 16000
@@ -19,6 +20,13 @@ class VitoConfig(BaseModel):
     keywords: str = ",".join(COMMAND_KEYWORDS)
     keywords_boost: int = 16
     domain: str = "CALL"
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=False,
+        validate_assignment=True,
+        extra="ignore",
+    )
 
 
 vito_config = VitoConfig()
