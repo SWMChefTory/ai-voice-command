@@ -10,14 +10,12 @@ class Intent:
     def _validate_intent(self, intent: str) -> str:
         if intent in ["NEXT", "PREV", "EXTRA"]:
             return intent
-        
-        step_pattern = re.match(r'^STEP(\d+)$', intent)
-        if step_pattern:
-            step_num = int(step_pattern.group(1))
-            if step_num > 0:
-                return intent
-        
-        return "EXTRA"
+        elif intent.startswith("STEP") or intent.startswith("TIMESTAMP"):
+            return intent
+        else:
+            return "EXTRA"
+    
+
 
 class RecipeStep:
     def __init__(self, step: int, start_time: int, end_time: int, content: str):
