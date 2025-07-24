@@ -4,9 +4,8 @@ from fastapi.websockets import WebSocketState
 from uvicorn.main import logger
 from src.exceptions import BusinessException
 from src.intent.models import Intent
-from src.intent.schemas import IntentResponse
+from .schemas import UserSessionResponse
 from src.schemas import BusinessErrorResponse, IntervalErrorResponse, SuccessResponse
-
 
 class UserSessionClient(ABC):
 
@@ -25,7 +24,7 @@ class UserSessionClient(ABC):
 class UserSessionClientImpl(UserSessionClient):
     async def close_session(self, client_websocket: WebSocket):
         try:
-            if client_websocket.state != WebSocketState.CONNECTED:
+            if client_websocket.client_state != WebSocketState.CONNECTED:
                 return
             
             logger.info(f"[SpringSessionClient] 세션 {client_websocket.client} 연결이 끊어졌습니다.")
@@ -40,5 +39,5 @@ class UserSessionClientImpl(UserSessionClient):
             await client_websocket.send_json(IntervalErrorResponse(error).model_dump())
             
     async def send_result(self, client_websocket: WebSocket, result : Intent):
-        response = IntentResponse.from_intent(result)
+        response = UserSessionResponse.from_result(result)
         await client_websocket.send_json(SuccessResponse(response).model_dump())

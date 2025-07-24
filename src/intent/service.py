@@ -1,10 +1,11 @@
-from uvicorn.main import logger
+
 from src.intent.exceptions import IntentErrorCode, IntentException
 from src.intent.models import Intent
 from src.intent.utils import CaptionLoader, StepsLoader
 from src.intent.step_match.service import IntentStepMatchService
 from src.intent.pattern_match.service import IntentPatternMatchService
 from src.intent.classify.service import IntentClassifyService
+from src.models import IntentProvider
 
 class IntentService:
     def __init__(self, 
@@ -27,18 +28,16 @@ class IntentService:
             
             matched_intent = self.intent_pattern_match_service.match_intent(base_intent)
             if matched_intent:
-                return Intent(matched_intent, base_intent)
+                return Intent(matched_intent, base_intent, IntentProvider.REGEX)
 
             filtered_intent = self.intent_classify_service.classify_intent(base_intent, len(steps))
             if filtered_intent == "TIMESTAMP":
                 timestamp_intent = self.intent_step_match_service.step_match(base_intent, captions)
-                return Intent(timestamp_intent, base_intent)
+                return Intent(timestamp_intent, base_intent, IntentProvider.GPT4_1)
             else:
-                return Intent(filtered_intent, base_intent)
+                return Intent(filtered_intent, base_intent, IntentProvider.GPT4_1)
             
-        except IntentException as e:
-            logger.error(f"[IntentService] {e.code.value}: {e.original_exception}", exc_info=True)
-            raise IntentException(IntentErrorCode.INTENT_SERVICE_ERROR, e)
-        except Exception as e:
-            logger.error(f"[IntentService]: {e}", exc_info=True)
-            raise IntentException(IntentErrorCode.INTENT_SERVICE_ERROR, e)
+        except IntentException:
+            raise IntentException(IntentErrorCode.INTENT_SERVICE_ERROR)
+        except Exception:
+            raise IntentException(IntentErrorCode.INTENT_SERVICE_ERROR)
