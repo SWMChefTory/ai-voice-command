@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict, Any
 from src.intent.models import RecipeCaption
 
 
@@ -26,7 +26,7 @@ class PromptGenerator:
             {chr(10).join(map(str, recipe_captions))}
     """
 
-def build_intent_step_match_tool() -> dict:
+def build_intent_step_match_tool() -> Dict[str, Any]:
     return {
             "type": "function",
             "function": {

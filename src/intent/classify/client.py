@@ -1,10 +1,11 @@
-from uvicorn.main import logger
+
 from abc import ABC, abstractmethod
+from asyncio.log import logger
 from groq.types.chat import ChatCompletionMessageParam
 from openai import AzureOpenAI
 import json
 from src.intent.classify.utils import build_intent_classification_tool
-from src.intent.exceptions import _AzureClientException, IntentErrorCode
+from src.intent.exceptions import AzureClientException, IntentErrorCode
 from .config import azure_config
 
 
@@ -18,8 +19,8 @@ class AzureIntentClient(IntentClient):
     def __init__(self):
         self.client = AzureOpenAI(
             api_key=azure_config.api_key,
-            azure_endpoint=azure_config.endpoint,
-            api_version=azure_config.api_version
+            azure_endpoint="https://hwangkyo.openai.azure.com/",
+            api_version="2024-12-01-preview"
             )  
 
     def request_intent(self, user_prompt: str, system_prompt: str, total_steps: int) -> str:
@@ -39,15 +40,14 @@ class AzureIntentClient(IntentClient):
             )
 
             message = response.choices[0].message
-            logger.info(f"[IntentClient] {message}")
             if message.tool_calls:
                 tool_call = message.tool_calls[0]
                 function_args = json.loads(tool_call.function.arguments)
                 intent = function_args.get("intent", "ERROR")
-                logger.info(f"[IntentClient] {intent}")
                 return intent
             else:
-                raise _AzureClientException(IntentErrorCode.AZURE_REQUEST_SEND_ERROR, ValueError("No tool call found"))
+                raise AzureClientException(IntentErrorCode.AZURE_REQUEST_SEND_ERROR)
                 
         except Exception as e:
-            raise _AzureClientException(IntentErrorCode.AZURE_REQUEST_SEND_ERROR, e)
+            logger.error(e)
+            raise AzureClientException(IntentErrorCode.AZURE_REQUEST_SEND_ERROR)

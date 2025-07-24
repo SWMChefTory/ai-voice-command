@@ -29,7 +29,9 @@ class PromptGenerator:
 def build_label_enum(total_steps: int) -> list[str]:
     return ["NEXT", "PREV", "EXTRA", "TIMESTAMP"] + [f"STEP{i+1}" for i in range(total_steps)]
 
-def build_intent_classification_tool(total_steps: int) -> dict:
+from typing import Dict, Any
+
+def build_intent_classification_tool(total_steps: int) -> Dict[str, Any]:
     return {
     "type": "function",
     "function": {
