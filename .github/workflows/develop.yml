@@ -63,6 +63,10 @@ jobs:
             AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT }}
             RTZR_CLIENT_ID=${{ secrets.RTZR_CLIENT_ID }}
             RTZR_CLIENT_SECRET=${{ secrets.RTZR_CLIENT_SECRET }}
+            CLOVA_ACCESS_TOKEN=${{ secrets.CLOVA_ACCESS_TOKEN }}
+            OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+            AUTH_API_BASE=${{ secrets.AUTH_API_BASE }}
+            VOICE_COMMAND_API_BASE=${{ secrets.VOICE_COMMAND_API_BASE }}
             EOF
 
       - name: SSH to EC2 and deploy

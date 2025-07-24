@@ -8,18 +8,29 @@ from src.intent.step_match.service import IntentStepMatchService
 from src.intent.pattern_match.service import IntentPatternMatchService
 from src.intent.classify.service import IntentClassifyService
 from src.service import VoiceCommandService
-from src.user_session.client import UserSessionClient, UserSessionClient, UserSessionClientImpl
+from src.user_session.client import UserSessionClient, UserSessionClientImpl
 from src.intent.utils import CaptionLoader, StepsLoader
-from src.stt.client import STTClient, VitoStreamingClient
+from src.stt.client import NaverClovaStreamingClient, OpenAIStreamingClient, VitoStreamingClient
 from src.user_session.repository import UserSessionRepository, UserSessionRepositoryImpl
 from src.stt.repository import STTSessionRepository, STTSessionRepositoryImpl
 from src.stt.service import STTService
 from src.intent.service import IntentService
 from src.user_session.service import UserSessionService
+from src.client import CheftoryVoiceCommandClient, VoiceCommandClient
+from src.auth.service import AuthService
+from src.auth.client import AuthClient, CheftoryAuthClient
 
 
 @lru_cache
-def intent_client() -> IntentClient:                 
+def auth_client() -> AuthClient:
+    return CheftoryAuthClient()
+
+@lru_cache
+def voice_command_client() -> VoiceCommandClient:
+    return CheftoryVoiceCommandClient()
+
+@lru_cache
+def intent_client() -> IntentClient:
     return AzureIntentClient()
 
 @lru_cache
@@ -27,15 +38,15 @@ def intent_step_match_client() -> IntentStepMatchClient:
     return AzureIntentStepMatchClient()
 
 @lru_cache
-def caption_loader() -> CaptionLoader:           
+def caption_loader() -> CaptionLoader:
     return CaptionLoader()
 
 @lru_cache
-def steps_loader() -> StepsLoader:               
+def steps_loader() -> StepsLoader:
     return StepsLoader()
 
 @lru_cache
-def prompt_generator() -> PromptGenerator:       
+def prompt_generator() -> PromptGenerator:
     return PromptGenerator()
 
 @lru_cache
@@ -43,8 +54,16 @@ def user_session_client() -> UserSessionClient:
     return UserSessionClientImpl()
 
 @lru_cache
-def stt_client() -> STTClient:
-    return VitoStreamingClient() 
+def vito_client() -> VitoStreamingClient:
+    return VitoStreamingClient()
+
+@lru_cache
+def naver_clova_client() -> NaverClovaStreamingClient:
+    return NaverClovaStreamingClient()
+
+@lru_cache
+def openai_client() -> OpenAIStreamingClient:
+    return OpenAIStreamingClient()
 
 @lru_cache
 def stt_repository() -> STTSessionRepository:
@@ -77,6 +96,10 @@ def intent_classify_service() -> IntentClassifyService:
     )
 
 @lru_cache
+def auth_service() -> AuthService:
+    return AuthService(auth_client())
+
+@lru_cache
 def user_session_service() -> UserSessionService:
     return UserSessionService(
         repository      = user_session_repository(),
@@ -87,7 +110,9 @@ def user_session_service() -> UserSessionService:
 def stt_service() -> STTService:
     return STTService(
         repository    = stt_repository(),
-        client = stt_client(),
+        naver_clova_client = naver_clova_client(),
+        openai_client = openai_client(),
+        vito_client = vito_client(),
     )
 
 @lru_cache
@@ -106,4 +131,6 @@ def voice_command_service() -> VoiceCommandService:
         stt_service     = stt_service(),
         intent_service  = intent_service(),
         user_session_service = user_session_service(),
+        auth_service = auth_service(),
+        voice_command_client = voice_command_client(),
     )

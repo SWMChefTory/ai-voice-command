@@ -4,31 +4,42 @@ from src.exceptions import VoiceCommandException
 
 
 class IntentErrorCode(Enum):
-    AZURE_REQUEST_SEND_ERROR = "Azure API 요청 전송 실패했습니다."
-    SPRING_INTENT_SEND_ERROR = "Spring으로 의도 파악 결과를 보내는데 실패했습니다."
-    CAPTION_LOAD_ERROR = "자막을 로드하는데 실패했습니다."
-    STEPS_LOAD_ERROR = "스텝을 로드하는데 실패했습니다."
-    INTENT_SERVICE_ERROR = "의도 파악 서비스에 오류가 발생했습니다."
+    AZURE_REQUEST_SEND_ERROR = ("INTENT_1", "Azure API 요청 전송에 실패했습니다.")
+    SPRING_INTENT_SEND_ERROR = ("INTENT_2", "Spring으로 의도 파악 결과 전송에 실패했습니다.")
+    CAPTION_LOAD_ERROR = ("INTENT_3", "자막 로드에 실패했습니다.")
+    STEPS_LOAD_ERROR = ("INTENT_4", "스텝 로드에 실패했습니다.")
+    INTENT_SERVICE_ERROR = ("INTENT_5", "의도 파악 서비스에서 오류가 발생했습니다.")
+
+    def __init__(self, code: str, message: str):
+        self._code = code
+        self._message = message
+
+    @property
+    def code(self) -> str:
+        return self._code
+
+    @property
+    def message(self) -> str:
+        return self._message
 
 
 class IntentException(VoiceCommandException):
-    def __init__(self, code: IntentErrorCode, original_exception: Exception):
-        super().__init__(code, original_exception)
+    def __init__(self, code: IntentErrorCode):
+        super().__init__(code)
         self.code = code
-        self.original_exception = original_exception
         
-class _AzureClientException(IntentException):
-    def __init__(self, code: IntentErrorCode, original_exception: Exception):
-        super().__init__(code, original_exception)
+class AzureClientException(IntentException):
+    def __init__(self, code: IntentErrorCode):
+        super().__init__(code)
 
-class _SpringIntentClientException(IntentException):
-    def __init__(self, code: IntentErrorCode, original_exception: Exception):
-        super().__init__(code, original_exception)
+class SpringIntentClientException(IntentException):
+    def __init__(self, code: IntentErrorCode):
+        super().__init__(code)
 
-class _CaptionLoaderException(IntentException):
-    def __init__(self, code: IntentErrorCode, original_exception: Exception):
-        super().__init__(code, original_exception)
+class CaptionLoaderException(IntentException):
+    def __init__(self, code: IntentErrorCode):
+        super().__init__(code)
 
-class _StepsLoaderException(IntentException):
-    def __init__(self, code: IntentErrorCode, original_exception: Exception):
-        super().__init__(code, original_exception)
+class StepsLoaderException(IntentException):
+    def __init__(self, code: IntentErrorCode):
+        super().__init__(code)
