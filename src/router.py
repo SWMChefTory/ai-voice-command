@@ -17,9 +17,11 @@ async def websocket_endpoint(
     token: str = Query(),
     voice_command_service: VoiceCommandService = Depends(voice_command_service),
 ):
+    user_id = await voice_command_service.validate_auth_token(token)
+
     await client_websocket.accept()
 
-    session_id = await voice_command_service.start_session(client_websocket, provider, token)
+    session_id = await voice_command_service.start_session(client_websocket, provider, user_id)
 
     try:
         await asyncio.gather(
