@@ -5,7 +5,7 @@ from src.models import STTProvider
 from src.stt.service import STTService
 from src.user_session.service import UserSessionService
 from src.utils import voice_command_error
-from uuid import UUID, uuid4
+from uuid import uuid4
 from src.auth.service import AuthService
 from src.client import VoiceCommandClient
 
