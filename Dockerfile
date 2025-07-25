@@ -10,6 +10,9 @@ RUN curl -Ls https://astral.sh/uv/install.sh | sh && \
 COPY ./pyproject.toml ./
 COPY ./uv.lock ./
 
+COPY ./nest_pb2.py ./nest_pb2.py
+COPY ./nest_pb2_grpc.py ./nest_pb2_grpc.py
+
 RUN uv venv && uv sync
 
 COPY ./assets ./assets
