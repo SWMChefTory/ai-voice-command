@@ -26,7 +26,7 @@ class CheftoryAuthClient(AuthClient):
 
                 if response.status_code == 200:
                     data = response.json()
-                    user_id = data.get("userId")
+                    user_id = data.get("user_id")
                     return user_id
                 else:
                     error_data = response.json()
