@@ -20,4 +20,5 @@ COPY ./assets ./assets
 COPY ./src ./src
 
 ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONPATH="/app:$PYTHONPATH"
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
