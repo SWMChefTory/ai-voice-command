@@ -14,16 +14,12 @@ async def websocket_endpoint(
     client_websocket: WebSocket,
     provider: STTProvider = Query(),
     recipe_id: UUID = Query(),
+    token: str = Query(),
     voice_command_service: VoiceCommandService = Depends(voice_command_service),
 ):
     await client_websocket.accept()
-    auth_token = client_websocket.headers.get("Authorization")
 
-    if auth_token is None:
-        await client_websocket.close(code=4401)
-        return
-
-    session_id = await voice_command_service.start_session(client_websocket, provider, auth_token)
+    session_id = await voice_command_service.start_session(client_websocket, provider, token)
 
     try:
         await asyncio.gather(
