@@ -20,7 +20,7 @@ class CheftoryAuthClient(AuthClient):
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     url,
-                    headers={"Authorization": auth_token},
+                    headers={"Authorization": f"Bearer {auth_token}"},
                     timeout=5.0
                 )
 

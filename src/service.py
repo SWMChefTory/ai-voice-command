@@ -18,9 +18,12 @@ class VoiceCommandService:
         self.voice_command_client = voice_command_client
                 
     @voice_command_error
-    async def start_session(self, client_websocket: WebSocket, provider: STTProvider, auth_token: str) -> UUID:
+    async def validate_auth_token(self, auth_token: str) -> UUID:
+        return await self.auth_service.validate_auth_token(auth_token)
+    
+    @voice_command_error
+    async def start_session(self, client_websocket: WebSocket, provider: STTProvider, user_id: UUID) -> UUID:
         session_id = uuid4()
-        user_id = await self.auth_service.validate_auth_token(auth_token)
         await self.user_session_service.create(session_id, client_websocket, provider, user_id)
         await self.stt_service.create(session_id, provider)
         return session_id
