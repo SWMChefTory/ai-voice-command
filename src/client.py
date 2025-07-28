@@ -3,7 +3,7 @@ import httpx
 from uvicorn.main import logger
 from src.intent.models import Intent
 from src.models import STTProvider
-from src.schemas import VoiceCommandResponse
+from src.schemas import VoiceCommandRequest
 from .config import voice_command_config
 from uuid import UUID
 
@@ -23,7 +23,7 @@ class CheftoryVoiceCommandClient(VoiceCommandClient):
             async with httpx.AsyncClient() as client:
                 await client.post(
                 url,
-                json=VoiceCommandResponse.from_intent(result, user_id, stt_provider).model_dump()
+                json=VoiceCommandRequest.from_intent(result, user_id, stt_provider).model_dump()
             )
         except Exception as e:
             logger.error(e, exc_info=True)

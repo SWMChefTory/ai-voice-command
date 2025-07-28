@@ -1,5 +1,5 @@
 from typing import List, Dict, Any
-from src.intent.models import RecipeCaption
+from src.user_session.recipe.models import RecipeCaption
 
 
 class PromptGenerator:

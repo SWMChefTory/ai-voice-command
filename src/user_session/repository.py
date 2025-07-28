@@ -1,13 +1,11 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 from typing import Dict
-from fastapi import WebSocket
-from src.models import STTProvider
 from .models import UserSession
 
 class UserSessionRepository(ABC):
     @abstractmethod
-    def create_session(self, session_id: UUID, websocket: WebSocket, provider: STTProvider, user_id: UUID):
+    def create_session(self, session_id: UUID, user_session: UserSession):
         pass
 
     @abstractmethod
@@ -26,8 +24,8 @@ class UserSessionRepositoryImpl(UserSessionRepository):
     def __init__(self):
         self.sessions: Dict[UUID, UserSession] = {}
 
-    def create_session(self, session_id: UUID, websocket: WebSocket, provider: STTProvider, user_id: UUID):
-        self.sessions[session_id] = UserSession(session_id, websocket, user_id, provider)
+    def create_session(self, session_id: UUID, user_session: UserSession):
+        self.sessions[session_id] = user_session
 
     def remove_session(self, session_id: UUID):
         self.sessions.pop(session_id, None)

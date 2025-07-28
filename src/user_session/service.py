@@ -7,14 +7,19 @@ from .repository import UserSessionRepository
 
 from .client import UserSessionClient
 from uuid import UUID
+from .recipe.service import RecipeService
 
 class UserSessionService:
-    def __init__(self, repository: UserSessionRepository, client: UserSessionClient):
+    def __init__(self, repository: UserSessionRepository, client: UserSessionClient, recipe_service: RecipeService):
         self.repository = repository
         self.client = client
+        self.recipe_service = recipe_service
 
-    async def create(self,session_id: UUID, client_websocket: WebSocket, provider: STTProvider, user_id: UUID) -> UUID:
-        self.repository.create_session(session_id, client_websocket, provider, user_id)
+    async def create(self,session_id: UUID, client_websocket: WebSocket, provider: STTProvider, user_id: UUID, recipe_id: UUID) -> UUID:
+        recipe_captions = await self.recipe_service.get_recipe_caption(recipe_id)
+        recipe_steps = await self.recipe_service.get_recipe_steps(recipe_id)
+        user_session = UserSession(session_id, client_websocket, user_id, provider, recipe_captions, recipe_steps)
+        self.repository.create_session(session_id, user_session)
         return session_id
 
     async def remove(self, session_id: UUID):
