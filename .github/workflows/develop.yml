@@ -67,6 +67,7 @@ jobs:
             OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
             AUTH_API_BASE=${{ secrets.AUTH_API_BASE }}
             VOICE_COMMAND_API_BASE=${{ secrets.VOICE_COMMAND_API_BASE }}
+            RECIPE_API_BASE=${{ secrets.RECIPE_API_BASE }}
             EOF
 
       - name: SSH to EC2 and deploy
