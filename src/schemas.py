@@ -35,7 +35,7 @@ class BusinessErrorResponse(CommonResponse[dict[str, str]]):
             }
         )
         
-class VoiceCommandResponse(BaseModel):
+class VoiceCommandRequest(BaseModel):
     stt_model: str
     intent_model: str
     transcribe: str
@@ -43,7 +43,7 @@ class VoiceCommandResponse(BaseModel):
     user_id: str
 
     @classmethod
-    def from_intent(cls, intent: Intent, user_id: UUID, stt_provider: STTProvider) -> "VoiceCommandResponse":
+    def from_intent(cls, intent: Intent, user_id: UUID, stt_provider: STTProvider) -> "VoiceCommandRequest":
         return cls(
             stt_model=stt_provider.value,
             intent_model=intent.provider.value,

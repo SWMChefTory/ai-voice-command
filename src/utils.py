@@ -16,7 +16,7 @@ def voice_command_error(func: Callable[P, Awaitable[T]]) -> Callable[P, Awaitabl
                 try:
                     await self.user_session_service.send_error(session_id, e)
                 except Exception:
-                    pass  # 에러 전송 실패 시 무시
+                    pass
             raise VoiceCommandException(
                 VoiceCommandErrorCode.VOICE_COMMAND_SERVICE_ERROR
             ) from e
@@ -25,7 +25,7 @@ def voice_command_error(func: Callable[P, Awaitable[T]]) -> Callable[P, Awaitabl
                 try:
                     await self.user_session_service.send_error(session_id, e)
                 except Exception:
-                    pass  # 에러 전송 실패 시 무시
+                    pass
             raise VoiceCommandException(
                 VoiceCommandErrorCode.VOICE_COMMAND_SERVICE_ERROR
             ) from e

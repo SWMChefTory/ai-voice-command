@@ -4,7 +4,7 @@ import pysrt # type: ignore
 from uvicorn.main import logger
 
 from src.intent.exceptions import CaptionLoaderException, StepsLoaderException, IntentErrorCode
-from src.intent.models import RecipeCaption, RecipeStep
+from src.user_session.recipe.models import RecipeCaption, RecipeStep
 
 class CaptionLoader:
     def __init__(self):

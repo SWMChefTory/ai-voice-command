@@ -22,9 +22,9 @@ class VoiceCommandService:
         return await self.auth_service.validate_auth_token(auth_token)
     
     @voice_command_error
-    async def start_session(self, client_websocket: WebSocket, provider: STTProvider, user_id: UUID) -> UUID:
+    async def start_session(self, client_websocket: WebSocket, provider: STTProvider, user_id: UUID, recipe_id: UUID) -> UUID:
         session_id = uuid4()
-        await self.user_session_service.create(session_id, client_websocket, provider, user_id)
+        await self.user_session_service.create(session_id, client_websocket, provider, user_id, recipe_id)
         await self.stt_service.create(session_id, provider)
         return session_id
         
@@ -38,7 +38,7 @@ class VoiceCommandService:
     async def stream_intents(self, session_id: UUID):
         user_session = self.user_session_service.get_session(session_id)
         async for stt_result in self.stt_service.receive(session_id, user_session.get_stt_provider()):
-            intent = await self.intent_service.analyze(stt_result)       
+            intent = await self.intent_service.analyze(stt_result, user_session.get_recipe_captions(), user_session.get_recipe_steps())       
             await self.user_session_service.send_result(session_id, intent)
             await self.voice_command_client.send_result(user_session.get_stt_provider(), intent, user_session.get_user_id())
 

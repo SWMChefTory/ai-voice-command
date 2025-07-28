@@ -21,7 +21,7 @@ async def websocket_endpoint(
 
     await client_websocket.accept()
 
-    session_id = await voice_command_service.start_session(client_websocket, provider, user_id)
+    session_id = await voice_command_service.start_session(client_websocket, provider, user_id, recipe_id)
 
     try:
         await asyncio.gather(
