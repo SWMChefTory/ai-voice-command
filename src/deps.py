@@ -19,7 +19,8 @@ from src.user_session.service import UserSessionService
 from src.client import CheftoryVoiceCommandClient, VoiceCommandClient
 from src.auth.service import AuthService
 from src.auth.client import AuthClient, CheftoryAuthClient
-
+from src.user_session.recipe.service import RecipeService
+from src.user_session.recipe.client import RecipeCheftoryClient, RecipeClient
 
 @lru_cache
 def auth_client() -> AuthClient:
@@ -96,12 +97,23 @@ def intent_classify_service() -> IntentClassifyService:
     )
 
 @lru_cache
+def recipe_client() -> RecipeClient:
+    return RecipeCheftoryClient()
+
+@lru_cache
 def auth_service() -> AuthService:
     return AuthService(auth_client())
 
 @lru_cache
+def recipe_service() -> RecipeService:
+    return RecipeService(
+        client = recipe_client(),
+    )
+
+@lru_cache
 def user_session_service() -> UserSessionService:
     return UserSessionService(
+        recipe_service = recipe_service(),
         repository      = user_session_repository(),
         client   = user_session_client(),
     )
