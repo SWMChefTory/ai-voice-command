@@ -1,10 +1,13 @@
-from uvicorn.main import logger
+
 from src.intent.exceptions import IntentErrorCode, IntentException
 from src.intent.models import Intent
 from src.intent.utils import CaptionLoader, StepsLoader
 from src.intent.step_match.service import IntentStepMatchService
 from src.intent.pattern_match.service import IntentPatternMatchService
 from src.intent.classify.service import IntentClassifyService
+from src.models import IntentProvider
+from src.user_session.recipe.models import RecipeCaption, RecipeStep
+from typing import List
 
 class IntentService:
     def __init__(self, 
@@ -20,25 +23,20 @@ class IntentService:
         self.intent_pattern_match_service = intent_pattern_match_service
         self.intent_classify_service = intent_classify_service
         
-    async def analyze(self, base_intent: str) -> Intent:
+    async def analyze(self, base_intent: str, recipe_captions: List[RecipeCaption], recipe_steps: List[RecipeStep]) -> Intent:
         try:
-            captions = self.caption_loader.load_caption()
-            steps = self.steps_loader.load_steps()
-            
             matched_intent = self.intent_pattern_match_service.match_intent(base_intent)
             if matched_intent:
-                return Intent(matched_intent, base_intent)
+                return Intent(matched_intent, base_intent, IntentProvider.REGEX)
 
-            filtered_intent = self.intent_classify_service.classify_intent(base_intent, len(steps))
+            filtered_intent = self.intent_classify_service.classify_intent(base_intent, len(recipe_steps))
             if filtered_intent == "TIMESTAMP":
-                timestamp_intent = self.intent_step_match_service.step_match(base_intent, captions)
-                return Intent(timestamp_intent, base_intent)
+                timestamp_intent = self.intent_step_match_service.step_match(base_intent, recipe_captions)
+                return Intent(timestamp_intent, base_intent, IntentProvider.GPT4_1)
             else:
-                return Intent(filtered_intent, base_intent)
+                return Intent(filtered_intent, base_intent, IntentProvider.GPT4_1)
             
-        except IntentException as e:
-            logger.error(f"[IntentService] {e.code.value}: {e.original_exception}", exc_info=True)
-            raise IntentException(IntentErrorCode.INTENT_SERVICE_ERROR, e)
-        except Exception as e:
-            logger.error(f"[IntentService]: {e}", exc_info=True)
-            raise IntentException(IntentErrorCode.INTENT_SERVICE_ERROR, e)
+        except IntentException:
+            raise IntentException(IntentErrorCode.INTENT_SERVICE_ERROR)
+        except Exception:
+            raise IntentException(IntentErrorCode.INTENT_SERVICE_ERROR)
