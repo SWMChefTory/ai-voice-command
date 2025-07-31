@@ -1,9 +1,10 @@
 from functools import lru_cache
 import json
-import pysrt
+import pysrt # type: ignore
+from uvicorn.main import logger
 
-from src.intent.exceptions import _CaptionLoaderException, _StepsLoaderException, IntentErrorCode
-from src.intent.models import RecipeCaption, RecipeStep
+from src.intent.exceptions import CaptionLoaderException, StepsLoaderException, IntentErrorCode
+from src.user_session.recipe.models import RecipeCaption, RecipeStep
 
 class CaptionLoader:
     def __init__(self):
@@ -12,13 +13,14 @@ class CaptionLoader:
     @lru_cache(maxsize=1)
     def load_caption(self) -> list[RecipeCaption]:
         try:
-            subs = pysrt.open("assets/test.srt", encoding="utf-8")
+            subs = pysrt.open("assets/test.srt", encoding="utf-8") # type: ignore
             return [
-                RecipeCaption(int(sub.start.ordinal / 1000), int(sub.end.ordinal / 1000), sub.text)
-                for sub in subs
+                RecipeCaption(int(sub.start.ordinal / 1000), int(sub.end.ordinal / 1000), sub.text) # type: ignore
+                for sub in subs # type: ignore
             ]
         except Exception as e:
-            raise _CaptionLoaderException(IntentErrorCode.CAPTION_LOAD_ERROR, e)
+            logger.error(e)
+            raise CaptionLoaderException(IntentErrorCode.CAPTION_LOAD_ERROR)
 
 class StepsLoader:
     def __init__(self):
@@ -37,9 +39,10 @@ class StepsLoader:
                         text_parts.extend(steps[i]["details"])
                     combined_text = " | ".join(text_parts)
                     
-                    result.append(
-                        RecipeStep(i, int(steps[i]["start"]), int(steps[i]["end"]), combined_text)
+                    result.append( # type: ignore
+                        RecipeStep(i, int(steps[i]["start"]), int(steps[i]["end"]), combined_text) # type: ignore
                     )
-                return result
+                return result # type: ignore
         except Exception as e:
-            raise _StepsLoaderException(IntentErrorCode.STEPS_LOAD_ERROR, e)
+            logger.error(e)
+            raise StepsLoaderException(IntentErrorCode.STEPS_LOAD_ERROR)

@@ -10,10 +10,15 @@ RUN curl -Ls https://astral.sh/uv/install.sh | sh && \
 COPY ./pyproject.toml ./
 COPY ./uv.lock ./
 
+COPY ./nest_pb2.py ./
+COPY ./nest_pb2_grpc.py ./
+COPY ./nest.proto ./
+
 RUN uv venv && uv sync
 
 COPY ./assets ./assets
 COPY ./src ./src
 
 ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONPATH="/app:$PYTHONPATH"
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]

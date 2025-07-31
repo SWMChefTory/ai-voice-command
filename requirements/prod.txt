@@ -1,4 +1,0 @@
--r base.txt
-
-# Production tools
-gunicorn==21.2.0 
