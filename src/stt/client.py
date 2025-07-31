@@ -104,4 +104,5 @@ class VitoStreamingClient(STTClient):
                 continue
             if not data.get("alternatives"):
                 continue
+            logger.info(f"[VitoStreamingClient] data['alternatives'] {data['alternatives']}")
             yield data["alternatives"][0]["text"] 
