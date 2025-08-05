@@ -2,11 +2,14 @@ from functools import lru_cache
 
 from src.intent.classify.client import AzureIntentClient, IntentClient
 from src.intent.classify.utils import PromptGenerator
+from src.intent.timer_match.client import AzureIntentTimerMatchClient, IntentTimerMatchClient
 from src.intent.step_match.client import AzureIntentStepMatchClient, IntentStepMatchClient
 from src.intent.step_match.utils import PromptGenerator as StepMatchPromptGenerator
+from src.intent.timer_match.utils import PromptGenerator as TimerMatchPromptGenerator
 from src.intent.step_match.service import IntentStepMatchService
 from src.intent.pattern_match.service import IntentPatternMatchService
 from src.intent.classify.service import IntentClassifyService
+from src.intent.timer_match.service import IntentTimerMatchService
 from src.service import VoiceCommandService
 from src.user_session.client import UserSessionClient, UserSessionClientImpl
 from src.intent.utils import CaptionLoader, StepsLoader
@@ -37,6 +40,10 @@ def intent_client() -> IntentClient:
 @lru_cache
 def intent_step_match_client() -> IntentStepMatchClient:
     return AzureIntentStepMatchClient()
+
+@lru_cache
+def intent_timer_match_client() -> IntentTimerMatchClient:
+    return AzureIntentTimerMatchClient()
 
 @lru_cache
 def caption_loader() -> CaptionLoader:
@@ -79,6 +86,10 @@ def step_match_prompt_generator() -> StepMatchPromptGenerator:
     return StepMatchPromptGenerator()
 
 @lru_cache
+def timer_match_prompt_generator() -> TimerMatchPromptGenerator:
+    return TimerMatchPromptGenerator()
+
+@lru_cache
 def intent_step_match_service() -> IntentStepMatchService:
     return IntentStepMatchService(
         prompt_generator = step_match_prompt_generator(),
@@ -94,6 +105,13 @@ def intent_classify_service() -> IntentClassifyService:
     return IntentClassifyService(
         intent_client = intent_client(),
         prompt_generator = prompt_generator(),
+    )
+
+@lru_cache
+def intent_timer_match_service() -> IntentTimerMatchService:
+    return IntentTimerMatchService(
+        prompt_generator = timer_match_prompt_generator(),
+        intent_client = intent_timer_match_client(),
     )
 
 @lru_cache
@@ -135,6 +153,7 @@ def intent_service() -> IntentService:
         intent_step_match_service = intent_step_match_service(),
         intent_pattern_match_service = intent_pattern_match_service(),
         intent_classify_service = intent_classify_service(),
+        intent_timer_match_service = intent_timer_match_service(),
     )
 
 @lru_cache

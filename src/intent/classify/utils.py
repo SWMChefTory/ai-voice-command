@@ -11,6 +11,7 @@ class PromptGenerator:
         - NEXT
         - PREV
         - STEP1 … STEP{total_steps}
+        - TIMER
         - TIMESTAMP
         - EXTRA
 
@@ -21,13 +22,14 @@ class PromptGenerator:
         - 예) "1단계 보여줘" → `{{"intent":"STEP1"}}`  
         - 예) "마지막 단계"  → `{{"intent":"STEP{total_steps}"}}` 
         - TIMESTAMP: 특정 장면을 찾으라는 요청 ("파 넣는 장면", "물 살짝 부은 부분", "먹는 장면", "불 줄인 화면" 등)
+        - TIMER: 모든 타이머 관련 요청 ("타이머 시작", "시간 재줘", "타이머 멈춰", "시간 얼마나 됐어", "5분 타이머", "스톱워치" 등)
         - EXTRA: 명확하지 않은 입력, 인사, 일반 대화, 기술 문제, 거부 표현 등
 
         **반드시 `classify_cooking_intent` 함수를 호출해 위 JSON 형식으로만 응답하세요.**
         """
 
 def build_label_enum(total_steps: int) -> list[str]:
-    return ["NEXT", "PREV", "EXTRA", "TIMESTAMP"] + [f"STEP{i+1}" for i in range(total_steps)]
+    return ["NEXT", "PREV", "EXTRA", "TIMESTAMP", "TIMER"] + [f"STEP{i+1}" for i in range(total_steps)]
 
 from typing import Dict, Any
 
