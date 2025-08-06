@@ -36,6 +36,10 @@ class PromptGenerator:
 - SET 액션: duration **반드시 포함**(초 단위, 1 이상 정수)
 - START/STOP/CHECK 액션: duration은 **항상 null**
 
+**중요: 스키마 검증 규칙**
+- SET 액션일 때: duration은 1 이상의 정수여야 함
+- START/STOP/CHECK 액션일 때: duration은 반드시 null이어야 함
+
 **출력 형식:**
 반드시 classify_timer 함수만 호출하여 JSON 형태로 응답하라. 다른 텍스트나 설명 금지.
 
@@ -46,12 +50,12 @@ class PromptGenerator:
 """
 
 def build_intent_timer_match_tool() -> Dict[str, Any]:
-    """타이머 분류를 위한 함수 도구 정의"""
+    """타이머 분류를 위한 함수 도구 정의 (OpenAI API 호환)"""
     return {
         "type": "function",
         "function": {
             "name": "classify_timer",
-            "description": "Classify cooking timer input into action and duration (seconds). For SET, duration is required; otherwise it must be null.",
+            "description": "Classify cooking timer input into action and duration. SET action requires positive integer duration in seconds. START/STOP/CHECK actions must have null duration.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -62,30 +66,12 @@ def build_intent_timer_match_tool() -> Dict[str, Any]:
                     },
                     "duration": {
                         "type": ["integer", "null"],
-                        "description": "Duration in seconds. Required for SET; null for START/STOP/CHECK"
+                        "description": "Duration in seconds. Must be positive integer for SET action, null for START/STOP/CHECK actions",
+                        "minimum": 1
                     }
                 },
-                "required": ["action"],
-                "additionalProperties": False,
-                "allOf": [
-                    {
-                        "if": { "properties": { "action": { "const": "SET" } } },
-                        "then": {
-                            "required": ["duration"],
-                            "properties": {
-                                "duration": { "type": "integer", "minimum": 1 }
-                            }
-                        }
-                    },
-                    {
-                        "if": { "properties": { "action": { "enum": ["START", "STOP", "CHECK"] } } },
-                        "then": {
-                            "properties": {
-                                "duration": { "type": "null" }
-                            }
-                        }
-                    }
-                ]
+                "required": ["action", "duration"],
+                "additionalProperties": False
             }
         }
     }
