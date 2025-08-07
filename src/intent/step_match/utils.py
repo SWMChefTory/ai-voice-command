@@ -1,6 +1,6 @@
 from typing import List, Dict, Any
 from src.user_session.recipe.models import RecipeCaption
-
+import textwrap
 
 class PromptGenerator:
     def __init__(self):
@@ -8,7 +8,7 @@ class PromptGenerator:
         
     def generate_secondary_system_prompt(self, recipe_captions: List[RecipeCaption]) -> str:
         """2차 분류용 시스템 프롬프트 생성 (구체적인 단계 분류)"""
-        return f"""
+        return textwrap.dedent(f"""
             당신은 요리 영상의 구체적인 단계 분류기입니다.
 
             **2차 분류 규칙:**
@@ -24,7 +24,7 @@ class PromptGenerator:
 
             **현재 요리 영상의 시간:**
             {chr(10).join(map(str, recipe_captions))}
-    """
+    """).strip()
 
 def build_intent_step_match_tool() -> Dict[str, Any]:
     return {
