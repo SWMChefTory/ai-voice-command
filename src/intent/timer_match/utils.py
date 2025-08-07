@@ -1,4 +1,5 @@
 from typing import Dict, Any
+import textwrap
 
 class PromptGenerator:
     def __init__(self):
@@ -6,7 +7,7 @@ class PromptGenerator:
         
     def generate_secondary_system_prompt(self) -> str:
         """2차 분류용 시스템 프롬프트 생성 (타이머 분류)"""
-        return """당신은 요리 영상의 타이머 분류기입니다.
+        return textwrap.dedent("""당신은 요리 영상의 타이머 분류기입니다.
 
 ### 가능한 액션
 - START: 타이머 시작
@@ -47,12 +48,11 @@ class PromptGenerator:
 - 입력: "10분 타이머 시작해" → {"action":"SET","duration":600}
 - 입력: "타이머 멈춰" → {"action":"STOP","duration":null}
 - 입력: "얼마나 남았어?" → {"action":"CHECK","duration":null}
-"""
+""").strip()
 
 def build_intent_timer_match_tool() -> Dict[str, Any]:
-    """타이머 분류를 위한 함수 도구 정의 (OpenAI API 호환)"""
     return {
-        "type": "function",
+        "type": "function", 
         "function": {
             "name": "classify_timer",
             "description": "Classify cooking timer input into action and duration. SET action requires positive integer duration in seconds. START/STOP/CHECK actions must have null duration.",
