@@ -86,6 +86,7 @@ class VitoStreamingClient(STTClient):
             keywords=self._config.keywords,
             keywords_boost=str(self._config.keywords_boost),
             domain=self._config.domain,
+            epd_time=self._config.epd_time,
         )
         params = "&".join(f"{k}={v}" for k, v in query_params.items())
         uri = f"wss://{self._config.api_base.split('://')[1]}/v1/transcribe:streaming?{params}"
