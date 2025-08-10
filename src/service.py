@@ -17,7 +17,6 @@ class VoiceCommandService:
         self.auth_service = auth_service
         self.voice_command_client = voice_command_client
                 
-    @voice_command_error
     async def validate_auth_token(self, auth_token: str) -> UUID:
         return await self.auth_service.validate_auth_token(auth_token)
     

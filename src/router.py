@@ -17,8 +17,13 @@ async def websocket_endpoint(
     token: str = Query(),
     voice_command_service: VoiceCommandService = Depends(voice_command_service),
 ):
-    user_id = await voice_command_service.validate_auth_token(token)
-
+    try:
+        user_id = await voice_command_service.validate_auth_token(token)
+    except Exception as e:
+        logger.error(f"Auth failed: {e}")
+        await client_websocket.close(code=1008, reason="Unauthorized token")
+        return
+    
     await client_websocket.accept()
 
     session_id = await voice_command_service.start_session(client_websocket, provider, user_id, recipe_id)
