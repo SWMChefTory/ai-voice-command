@@ -20,6 +20,7 @@ class VitoConfig(BaseSettings):
     keywords: str = ",".join(COMMAND_KEYWORDS)
     keywords_boost: int = 16
     domain: str = "MEETING"
+    epd_time: float = 0.1 # 0.1s
 
     model_config = SettingsConfigDict(
         env_file=".env",
