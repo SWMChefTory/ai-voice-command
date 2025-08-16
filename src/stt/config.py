@@ -20,7 +20,7 @@ class VitoConfig(BaseSettings):
     keywords: str = ",".join(COMMAND_KEYWORDS)
     keywords_boost: int = 16
     domain: str = "MEETING"
-    epd_time: float = 0.1 # 0.1s
+    epd_time: float = 0.2 # 0.1s
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -37,8 +37,8 @@ class NaverClovaConfig(BaseSettings):
     skip_empty_text: bool = True
     use_word_epd: bool = False
     use_period_epd: bool = True
-    gap_threshold: int = 500
-    duration_threshold: int = 5000
+    gap_threshold: int = 400
+    duration_threshold: int = 4000
 
     model_config = SettingsConfigDict(
         env_file=".env",
