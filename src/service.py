@@ -4,7 +4,6 @@ from src.intent.service import IntentService
 from src.models import STTProvider
 from src.stt.service import STTService
 from src.user_session.service import UserSessionService
-from src.utils import voice_command_error
 from uuid import uuid4
 from src.auth.service import AuthService
 from src.client import VoiceCommandClient
@@ -20,20 +19,17 @@ class VoiceCommandService:
     async def validate_auth_token(self, auth_token: str) -> UUID:
         return await self.auth_service.validate_auth_token(auth_token)
     
-    @voice_command_error
     async def start_session(self, client_websocket: WebSocket, provider: STTProvider, user_id: UUID, recipe_id: UUID) -> UUID:
         session_id = uuid4()
         await self.user_session_service.create(session_id, client_websocket, provider, user_id, recipe_id)
         await self.stt_service.create(session_id, provider)
         return session_id
         
-    @voice_command_error
-    async def stream_audio(self, session_id: UUID, chunk: bytes):
+    async def stream_audio(self, session_id: UUID, chunk: bytes, is_final: bool):
         user_session = self.user_session_service.get_session(session_id)
         provider = user_session.get_stt_provider()
-        await self.stt_service.send(session_id, chunk, provider)
+        await self.stt_service.send(session_id, chunk, provider, is_final)
     
-    @voice_command_error
     async def stream_intents(self, session_id: UUID):
         user_session = self.user_session_service.get_session(session_id)
         async for stt_result in self.stt_service.receive(session_id, user_session.get_stt_provider()):
@@ -41,7 +37,6 @@ class VoiceCommandService:
             await self.user_session_service.send_result(session_id, intent)
             await self.voice_command_client.send_result(user_session.get_stt_provider(), intent, user_session.get_user_id())
 
-    @voice_command_error
     async def end_session(self, session_id: UUID):
         user_session = self.user_session_service.get_session(session_id)
         provider = user_session.get_stt_provider()

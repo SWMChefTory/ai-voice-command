@@ -29,7 +29,7 @@ class STTClient(ABC):
         pass
 
     @abstractmethod
-    async def send_chunk(self, connection: Any, chunk: bytes):
+    async def send_chunk(self, connection: Any, chunk: bytes, is_final: bool = False):
         pass
 
     @abstractmethod
@@ -102,7 +102,7 @@ class VitoStreamingClient(STTClient):
             return
         await connection.close()
 
-    async def send_chunk(self, connection: ClientConnection, chunk: bytes):
+    async def send_chunk(self, connection: ClientConnection, chunk: bytes, is_final: bool = False):
         try:
             await connection.send(chunk)
         except Exception as e:
@@ -116,11 +116,14 @@ class VitoStreamingClient(STTClient):
                 continue
             if not data.get("alternatives"):
                 continue
-            logger.info(f"[VitoStreamingClient] data['alternatives'] {data['alternatives']}")
             yield data["alternatives"][0]["text"] 
 
 
 class NaverClovaStreamingClient(STTClient):
+    # 클래스 레벨 공유 채널 - 처음에 한 번만 생성
+    _shared_channel = None
+    _channel_lock = asyncio.Lock()
+    
     def __init__(self):
         super().__init__()
         self._sess = Session()
@@ -128,10 +131,34 @@ class NaverClovaStreamingClient(STTClient):
         self._lock = asyncio.Lock()
         self._config = naver_clova_config
 
+    @classmethod
+    async def shutdown(cls):
+        """애플리케이션 종료 시 공유 채널 정리"""
+        async with cls._channel_lock:
+            if cls._shared_channel is not None:
+                try:
+                    await cls._shared_channel.close()
+                    logger.info("네이버 클로바 STT 공유 채널이 정상적으로 종료되었습니다")
+                except Exception as e:
+                    logger.error(f"네이버 클로바 STT 채널 종료 중 오류: {e}")
+                finally:
+                    cls._shared_channel = None
+
+    async def _ensure_shared_channel(self):
+        """공유 채널이 없으면 생성하고 반환"""
+        async with NaverClovaStreamingClient._channel_lock:
+            if NaverClovaStreamingClient._shared_channel is None:
+                creds = grpc.ssl_channel_credentials() # type: ignore
+                NaverClovaStreamingClient._shared_channel = grpc.aio.secure_channel(
+                    self._config.grpc_server, creds
+                ) # type: ignore
+            return NaverClovaStreamingClient._shared_channel
+
+
     async def connect_session(self) -> StreamStreamCall: # type: ignore
         try:
-            creds = grpc.ssl_channel_credentials() # type: ignore
-            channel = grpc.aio.secure_channel(self._config.grpc_server, creds) # type: ignore
+            # 공유 채널 사용 (매번 새로 만들지 않음)
+            channel = await self._ensure_shared_channel()
             stub = nest_pb2_grpc.NestServiceStub(channel)
             
             metadata = (("authorization", f"Bearer {self._config.access_token}"),)
@@ -164,11 +191,19 @@ class NaverClovaStreamingClient(STTClient):
             logger.error(e)
             raise NaverClovaStreamingClientException(STTErrorCode.STT_CONNECTION_ERROR)
 
-    async def send_chunk(self, connection: StreamStreamCall, chunk: bytes): # type: ignore
+    async def send_chunk(self, connection: StreamStreamCall, chunk: bytes, is_final: bool = False): # type: ignore
         try:
+            extra_contents = json.dumps({
+                "seqId": 0, 
+                "epFlag": is_final
+            })
+            
             data_request = nest_pb2.NestRequest( # type: ignore
                 type=nest_pb2.RequestType.DATA, # type: ignore
-                data=nest_pb2.NestData(chunk=chunk) # type: ignore
+                data=nest_pb2.NestData( # type: ignore
+                    chunk=chunk,
+                    extra_contents=extra_contents
+                )
             )
             await connection.write(data_request) # type: ignore
         except Exception as e:
@@ -193,13 +228,12 @@ class NaverClovaStreamingClient(STTClient):
 
     async def close_session(self, connection: StreamStreamCall): # type: ignore 
         try:
+            logger.info(f"[NaverClovaStreamingClient] 연결 종료 시도")
             if connection:
-                await connection.done_writing() # type: ignore
-                channel = connection._channel if hasattr(connection, '_channel') else None # type: ignore
-                if channel:
-                    await channel.close() # type: ignore
+                await connection.done_writing() 
+                connection.cancel()
         except Exception as e:
-            logger.error(e)
+            logger.error(f"클로바 STT 연결 종료 중 오류 발생: {e}")
 
 
 class OpenAIStreamingClient(STTClient):
@@ -227,10 +261,10 @@ class OpenAIStreamingClient(STTClient):
                         "language": self._config.language
                     },
                     "turn_detection": {
-                        "type": "server_vad",
-                        "threshold": self._config.vad_threshold,
-                        "prefix_padding_ms": self._config.prefix_padding_ms,
-                        "silence_duration_ms": self._config.silence_duration_ms,
+                        "type": "none",  # 👈 서버 VAD 비활성화, 클라이언트 제어
+                        # "threshold": self._config.vad_threshold,
+                        # "prefix_padding_ms": self._config.prefix_padding_ms,
+                        # "silence_duration_ms": self._config.silence_duration_ms,
                     },
                     "input_audio_noise_reduction": {
                         "type": self._config.noise_reduction_type
@@ -250,7 +284,7 @@ class OpenAIStreamingClient(STTClient):
         if connection.state != State.CLOSED:
             await connection.close()
 
-    async def send_chunk(self, connection: ClientConnection, chunk: bytes):
+    async def send_chunk(self, connection: ClientConnection, chunk: bytes, is_final: bool = False):
         try:
             await connection.send(
                 json.dumps(
@@ -260,6 +294,15 @@ class OpenAIStreamingClient(STTClient):
                     }
                 )
             )
+            
+            if is_final:
+                # 클라이언트가 음성 종료를 알려주면 커밋 신호 전송
+                await connection.send(
+                    json.dumps({
+                        "type": "input_audio_buffer.commit"
+                    })
+                )
+                
         except Exception as e:
             logger.error(e)
             raise OpenAIStreamingClientException(STTErrorCode.STT_STREAM_ERROR)

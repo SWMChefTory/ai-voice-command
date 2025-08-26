@@ -34,18 +34,16 @@ class AzureIntentStepMatchClient(IntentStepMatchClient):
                 messages=messages,  # type: ignore
                 model=azure_config.model,
                 temperature=0.0,
-                max_tokens=20,
+                max_tokens=50,
                 tools=tools,  # type: ignore
                 tool_choice="required",
             )
 
             message = response.choices[0].message
-            logger.info(f"[IntentStepMatchClient] {message}")
             if message.tool_calls:
                 tool_call = message.tool_calls[0]
                 function_args = json.loads(tool_call.function.arguments)
                 timestamp = function_args.get("timestamp", "ERROR")
-                logger.info(f"[IntentStepMatchClient] TIMESTAMP {timestamp}")
                 return f"TIMESTAMP {timestamp}"
             else:
                 return "ERROR"

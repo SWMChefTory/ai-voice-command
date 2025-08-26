@@ -1,5 +1,5 @@
 import asyncio
-from asyncio.log import logger
+from uvicorn.main import logger
 from fastapi import APIRouter, Depends, Query, WebSocket
 from uuid import UUID
 
@@ -18,11 +18,11 @@ async def websocket_endpoint(
     token: str = Query(),
     voice_command_service: VoiceCommandService = Depends(voice_command_service),
 ):
+    session_id = None
 
     await client_websocket.accept()
     
     try:
-        logger.info(f"Validating auth token: {token}")
         user_id = await voice_command_service.validate_auth_token(token)
     except VoiceCommandException as e:
         await client_websocket.close(code=1008, reason=str(e.code))
@@ -35,16 +35,37 @@ async def websocket_endpoint(
             _process_stt_results(client_websocket, voice_command_service, session_id),
             _handle_recognition_flow(voice_command_service, session_id),
         )
+    except ConnectionAbortedError:
+        logger.info("WebSocket connection closed")
     except Exception as e:
         logger.error(e)
     finally:
         await voice_command_service.end_session(session_id)
+    
+async def _process_stt_results(
+    client_websocket: WebSocket,
+    service: VoiceCommandService,
+    session_id: UUID
+):
+    logger.info(f"[Router] STT 결과 처리 시작 - 세션 ID: {session_id}")
+    try:
+        message_count = 0
+        async for message in client_websocket.iter_bytes():
+            message_count += 1
+            if len(message) == 0:
+                continue
+                
+            is_final = bool(message[0])
+            audio_data = message[1:]
+            
+            await service.stream_audio(session_id, audio_data, is_final)
+        raise ConnectionAbortedError("WebSocket connection closed")
 
-async def _process_stt_results(client_websocket: WebSocket,
-                         service: VoiceCommandService,
-                         session_id: UUID):
-    async for chunk in client_websocket.iter_bytes():
-        await service.stream_audio(session_id, chunk)
+    except Exception as e:
+        raise e
 
 async def _handle_recognition_flow(service: VoiceCommandService, session_id: UUID):
-    await service.stream_intents(session_id)
+    try:
+        await service.stream_intents(session_id)
+    except Exception as e:
+        raise e

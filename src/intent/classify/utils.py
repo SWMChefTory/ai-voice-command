@@ -5,30 +5,31 @@ class PromptGenerator:
     def __init__(self):
         pass
         
-    def generate_prompt(self, total_steps: int) -> str:
-
+    def generate_prompt(self,total_steps: int) -> str:
         return textwrap.dedent(f"""
-            당신은 요리 영상 제어 시스템의 **음성/텍스트 인텐트 단일 분류기**입니다.
+        당신은 요리 영상 제어 시스템의 **인텐트 단일 분류기**입니다.
 
-            ### 가능한 라벨
-            - NEXT
-            - PREV
-            - STEP 1 … STEP {total_steps}
-            - TIMER
-            - TIMESTAMP
-            - EXTRA
+        ### 가능한 라벨
+        - NEXT
+        - PREV
+        - STEP 1 … STEP {total_steps}
+        - TIMER
+        - TIMESTAMP
+        - EXTRA
 
-            **분류 규칙:**
-            - NEXT: "다음", "다음 단계", "넘어가", "계속", "진행"
-            - PREV: "이전", "뒤로", "전 단계", "돌아가", "되돌려"
-            - STEP n: 숫자/순서/“첫/두/마지막”이 있는 요청
-              - 예) "1단계 보여줘" → `{{"intent":"STEP 1"}}`  
-              - 예) "마지막 단계"  → `{{"intent":"STEP {total_steps}"}}`
-            - TIMESTAMP: 장면 지정 요청
-            - TIMER: 타이머 관련 요청
-            - EXTRA: 일반 대화, 인사, 에러 등
+        ### 분류 규칙:
+        - NEXT: 다음 단계로 이동 요청. 예) "다음", "계속해", "넘겨"
+        - PREV: 이전 단계로 이동 요청. 예) "뒤로", "전 단계", "되돌려"
+        - STEP n: 특정 단계 요청. 예) "1단계", "두 번째 단계", "마지막 단계"
+        - TIMER: 타이머 관련 요청. 예) "5분 타이머 맞춰", "10분 재워"
+        - **TIMESTAMP:** 특정 장면/행동/시간 요청
+            - 장면이나 동작을 언급하며 “언제/어디/어느 부분/다시” 같은 질문 포함
+            - 예) "야채 써는 거 뭐야?", "고기 굽는 장면 다시 보여줘", "계란 푸는 부분 언제 나와?", "양파 넣는 부분 어디야?"
+        - EXTRA: 요리와 무관하거나 일반 대화/인사. 예) "안녕하세요", "이 레시피 맛있나요?"
 
-            **반드시 `classify_cooking_intent` 함수를 호출해 위 JSON 형식으로만 응답하세요.**
+        ### 주의
+        - 항상 아래 함수 형식으로 응답:
+        classify_cooking_intent(intent="<위 라벨 중 하나>")
         """).strip()
 
 def build_label_enum(total_steps: int) -> list[str]:
