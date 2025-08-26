@@ -23,7 +23,7 @@ class STTService:
         self.repository.create_session(session_id, stt_connection)
         return session_id
 
-    async def send(self, session_id: UUID, chunk: bytes, provider: STTProvider):
+    async def send(self, session_id: UUID, chunk: bytes, provider: STTProvider, is_final: bool = False):
         try:
             if not self.repository.is_session_exists(session_id):
                 logger.info(f"[STTService] 세션 {session_id}이 연결되지 않았거나 종료됨. 재연결 시도.")
@@ -31,7 +31,7 @@ class STTService:
                 self.repository.create_session(session_id, stt_connection)
 
             stt_connection = self.repository.get_session(session_id)
-            await self.clients[provider].send_chunk(stt_connection, chunk)
+            await self.clients[provider].send_chunk(stt_connection, chunk, is_final)
 
         except STTException:
             raise STTException(STTErrorCode.STT_SERVICE_ERROR)
@@ -50,9 +50,7 @@ class STTService:
             stt_connection = self.repository.get_session(session_id)
             try:
                 async for text in self.clients[provider].receive_result(stt_connection):
+                    logger.info(f"[STTService]: 음성 인식 결과: {text}")
                     yield text
             except websockets.ConnectionClosed:
                 logger.info(f"[STTService]: 세션 {session_id} 연결이 끊어졌습니다.")
-            finally:
-                await self.clients[provider].close_session(stt_connection)
-                self.repository.remove_session(session_id)

@@ -1,9 +1,21 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from src.config import get_settings, Settings
 from src.router import router
+from src.stt.client import NaverClovaStreamingClient
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("STT 서비스 시작")
+    
+    yield 
+    
+    print("STT 서비스 종료 중...")
+    await NaverClovaStreamingClient.shutdown()
+    print("STT 서비스 종료 완료")
 
 def create_app() -> FastAPI:
     settings = get_settings()
@@ -12,6 +24,7 @@ def create_app() -> FastAPI:
         title=settings.app_name,
         description="WebSocket 기반 실시간 STT(Speech-to-Text) 서비스",
         version=settings.version,
+        lifespan=lifespan
     )
 
     app.add_middleware(

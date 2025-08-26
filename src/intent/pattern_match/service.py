@@ -63,7 +63,7 @@ class IntentPatternMatchService:
                 predicted_idx: int = int(torch.argmax(probs).item())
                 confidence: float = float(probs[predicted_idx])
 
-            logger.info(f"의도 분류 결과: {self.label_map[predicted_idx]} (신뢰도: {confidence})")
+            logger.info(f"[IntentPatternMatchService]: 1차 의도 분류 결과: {self.label_map[predicted_idx]} (신뢰도: {confidence})")
 
             if confidence < 0.9:
                 return "EXTRA"
@@ -71,5 +71,5 @@ class IntentPatternMatchService:
             return self.label_map[predicted_idx]
 
         except Exception as e:
-            logger.error(f"의도 분류 실패: {e}")
+            logger.error(f"[IntentPatternMatchService]: 의도 분류 실패: {e}")
             return "EXTRA"
