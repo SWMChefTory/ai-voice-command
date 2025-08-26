@@ -5,16 +5,16 @@ from openai import AzureOpenAI
 import json
 
 from uvicorn.main import logger
-from src.intent.step_match.utils import build_intent_step_match_tool
+from src.intent.time_match.utils import build_time_intent_tool
 from .config import azure_config
 
 
-class IntentStepMatchClient(ABC):
+class IntentTimeMatchClient(ABC):
 
     @abstractmethod
     def request_intent(self, user_prompt: str, system_prompt: str) -> str:
         pass
-class AzureIntentStepMatchClient(IntentStepMatchClient):
+class AzureIntentTimeMatchClient(IntentTimeMatchClient):
     def __init__(self):
         self.client = AzureOpenAI(
             api_key=azure_config.api_key,
@@ -29,7 +29,7 @@ class AzureIntentStepMatchClient(IntentStepMatchClient):
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ]
-            tools = [build_intent_step_match_tool()]
+            tools = [build_time_intent_tool()]
             response = self.client.chat.completions.create(
                 messages=messages,  # type: ignore
                 model=azure_config.model,
@@ -43,11 +43,15 @@ class AzureIntentStepMatchClient(IntentStepMatchClient):
             if message.tool_calls:
                 tool_call = message.tool_calls[0]
                 function_args = json.loads(tool_call.function.arguments)
-                timestamp = function_args.get("timestamp", "ERROR")
-                return f"TIMESTAMP {timestamp}"
+                label = function_args.get("label")
+                if label == "TIMESTAMP":
+                    timestamp = function_args.get("timestamp")
+                    return f"TIMESTAMP {timestamp}"
+                else:
+                    return "EXTRA"
             else:
-                return "ERROR"
+                return "EXTRA"
                 
         except Exception as e:
-            logger.error(f"[IntentStepMatchClient] {e}", exc_info=True)
+            logger.error(f"[IntentTimeMatchClient] {e}", exc_info=True)
             return "EXTRA"

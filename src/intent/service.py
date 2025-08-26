@@ -1,7 +1,7 @@
 from src.intent.exceptions import IntentErrorCode, IntentException
 from src.intent.models import Intent
 from src.intent.utils import CaptionLoader, StepsLoader
-from src.intent.step_match.service import IntentStepMatchService
+from src.intent.time_match.service import IntentTimeMatchService
 from src.intent.pattern_match.service import IntentPatternMatchService
 from src.intent.classify.service import IntentClassifyService
 from src.intent.timer_match.service import IntentTimerMatchService
@@ -14,14 +14,14 @@ class IntentService:
     def __init__(self,
                  caption_loader: CaptionLoader,
                  steps_loader: StepsLoader,
-                 intent_step_match_service: IntentStepMatchService,
+                 intent_time_match_service: IntentTimeMatchService,
                  intent_pattern_match_service: IntentPatternMatchService,
                  intent_classify_service: IntentClassifyService,
                  intent_timer_match_service: IntentTimerMatchService
                  ):
         self.caption_loader = caption_loader
         self.steps_loader = steps_loader
-        self.intent_step_match_service = intent_step_match_service
+        self.intent_time_match_service = intent_time_match_service
         self.intent_pattern_match_service = intent_pattern_match_service
         self.intent_classify_service = intent_classify_service
         self.intent_timer_match_service = intent_timer_match_service
@@ -38,7 +38,7 @@ class IntentService:
 
             filtered_intent = self.intent_classify_service.classify_intent(base_intent, len(recipe_steps))
             if filtered_intent == "TIMESTAMP":
-                timestamp_intent = self.intent_step_match_service.step_match(base_intent, recipe_captions)
+                timestamp_intent = self.intent_time_match_service.time_match(base_intent, recipe_captions)
                 return Intent(timestamp_intent, base_intent, IntentProvider.GPT4_1)
             elif filtered_intent == "TIMER":
                 timer_intent = self.intent_timer_match_service.timer_match(base_intent)
