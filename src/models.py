@@ -8,4 +8,4 @@ class STTProvider(Enum):
 
 class IntentProvider(Enum):
     GPT4_1 = "GPT4.1"
-    REGEX = "REGEX"
+    NLU = "NLU"

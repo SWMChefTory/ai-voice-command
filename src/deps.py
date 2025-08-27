@@ -1,15 +1,15 @@
 from functools import lru_cache
 
-from src.intent.classify.client import AzureIntentClient, IntentClient
-from src.intent.classify.utils import PromptGenerator
-from src.intent.timer_match.client import AzureIntentTimerMatchClient, IntentTimerMatchClient
-from src.intent.time_match.client import AzureIntentTimeMatchClient, IntentTimeMatchClient
-from src.intent.time_match.utils import PromptGenerator as TimeMatchPromptGenerator
-from src.intent.timer_match.utils import PromptGenerator as TimerMatchPromptGenerator
-from src.intent.time_match.service import IntentTimeMatchService
-from src.intent.pattern_match.service import IntentPatternMatchService
-from src.intent.classify.service import IntentClassifyService
-from src.intent.timer_match.service import IntentTimerMatchService
+from src.intent.llm_classify.client import AzureIntentClient, IntentClient
+from src.intent.llm_classify.utils import PromptGenerator
+from src.intent.llm_timer_match.client import AzureIntentTimerMatchClient, IntentTimerMatchClient
+from src.intent.llm_segment_match.client import AzureIntentTimeMatchClient, IntentTimeMatchClient
+from src.intent.llm_segment_match.utils import PromptGenerator as TimeMatchPromptGenerator
+from src.intent.llm_timer_match.utils import PromptGenerator as TimerMatchPromptGenerator
+from src.intent.llm_segment_match.service import IntentSegmentMatchService
+from src.intent.nlu_classify.service import IntentNLUClassifyService
+from src.intent.llm_classify.service import IntentLLMClassifyService
+from src.intent.llm_timer_match.service import IntentTimerMatchService
 from src.service import VoiceCommandService
 from src.user_session.client import UserSessionClient, UserSessionClientImpl
 from src.intent.utils import CaptionLoader, StepsLoader
@@ -17,13 +17,14 @@ from src.stt.client import NaverClovaStreamingClient, OpenAIStreamingClient, Vit
 from src.user_session.repository import UserSessionRepository, UserSessionRepositoryImpl
 from src.stt.repository import STTSessionRepository, STTSessionRepositoryImpl
 from src.stt.service import STTService
-from src.intent.service import IntentService
+from src.intent.service import IntentService, NLUService, LLMService
 from src.user_session.service import UserSessionService
 from src.client import CheftoryVoiceCommandClient, VoiceCommandClient
 from src.auth.service import AuthService
 from src.auth.client import AuthClient, CheftoryAuthClient
 from src.user_session.recipe.service import RecipeService
 from src.user_session.recipe.client import RecipeCheftoryClient, RecipeClient
+from src.intent.nlu_timer_parse.service import IntentNLUTimerParseService
 
 @lru_cache
 def auth_client() -> AuthClient:
@@ -90,19 +91,19 @@ def timer_match_prompt_generator() -> TimerMatchPromptGenerator:
     return TimerMatchPromptGenerator()
 
 @lru_cache
-def intent_time_match_service() -> IntentTimeMatchService:
-    return IntentTimeMatchService(
+def intent_time_match_service() -> IntentSegmentMatchService:
+    return IntentSegmentMatchService(
         prompt_generator = time_match_prompt_generator(),
         intent_client = intent_time_match_client(),
     )
 
 @lru_cache
-def intent_pattern_match_service() -> IntentPatternMatchService:
-    return IntentPatternMatchService()
+def intent_nlu_classify_service() -> IntentNLUClassifyService:
+    return IntentNLUClassifyService()
 
 @lru_cache
-def intent_classify_service() -> IntentClassifyService:
-    return IntentClassifyService(
+def intent_classify_service() -> IntentLLMClassifyService:
+    return IntentLLMClassifyService(
         intent_client = intent_client(),
         prompt_generator = prompt_generator(),
     )
@@ -113,6 +114,10 @@ def intent_timer_match_service() -> IntentTimerMatchService:
         prompt_generator = timer_match_prompt_generator(),
         intent_client = intent_timer_match_client(),
     )
+
+@lru_cache
+def intent_nlu_timer_parse_service() -> IntentNLUTimerParseService:
+    return IntentNLUTimerParseService() 
 
 @lru_cache
 def recipe_client() -> RecipeClient:
@@ -146,14 +151,27 @@ def stt_service() -> STTService:
     )
 
 @lru_cache
+def nlu_service() -> NLUService:
+    return NLUService(
+        nlu_classify_service = intent_nlu_classify_service(),
+        nlu_timer_parse_service = intent_nlu_timer_parse_service(),
+    )
+
+@lru_cache
+def llm_service() -> LLMService:
+    return LLMService(
+        classify_service = intent_classify_service(),
+        time_match_service = intent_time_match_service(),
+        timer_match_service = intent_timer_match_service(),
+    )
+
+@lru_cache
 def intent_service() -> IntentService:
     return IntentService(
         caption_loader  = caption_loader(),
         steps_loader    = steps_loader(),
-        intent_time_match_service = intent_time_match_service(),
-        intent_pattern_match_service = intent_pattern_match_service(),
-        intent_classify_service = intent_classify_service(),
-        intent_timer_match_service = intent_timer_match_service(),
+        nlu_service = nlu_service(),
+        llm_service = llm_service(),
     )
 
 @lru_cache

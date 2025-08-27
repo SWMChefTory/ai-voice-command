@@ -5,16 +5,16 @@ from openai import AzureOpenAI
 import json
 
 from uvicorn.main import logger
-from src.intent.timer_match.utils import build_intent_timer_match_tool
+from src.intent.llm_segment_match.utils import build_time_intent_tool
 from .config import azure_config
+from src.intent.llm_segment_match.models import TimeIntentLabel, TimeIntentResult
 
-
-class IntentTimerMatchClient(ABC):
+class IntentTimeMatchClient(ABC):
 
     @abstractmethod
-    def request_intent(self, user_prompt: str, system_prompt: str) -> str:
+    def request_intent(self, user_prompt: str, system_prompt: str) -> TimeIntentResult:
         pass
-class AzureIntentTimerMatchClient(IntentTimerMatchClient):
+class AzureIntentTimeMatchClient(IntentTimeMatchClient):
     def __init__(self):
         self.client = AzureOpenAI(
             api_key=azure_config.api_key,
@@ -23,13 +23,13 @@ class AzureIntentTimerMatchClient(IntentTimerMatchClient):
             )
         
 
-    def request_intent(self, user_prompt: str, system_prompt: str) -> str:
+    def request_intent(self, user_prompt: str, system_prompt: str) -> TimeIntentResult:
         try:
             messages: list[ChatCompletionMessageParam] = [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ]
-            tools = [build_intent_timer_match_tool()]
+            tools = [build_time_intent_tool()]
             response = self.client.chat.completions.create(
                 messages=messages,  # type: ignore
                 model=azure_config.model,
@@ -40,21 +40,18 @@ class AzureIntentTimerMatchClient(IntentTimerMatchClient):
             )
 
             message = response.choices[0].message
-            logger.info(f"[IntentTimerMatchClient] {message}")
             if message.tool_calls:
                 tool_call = message.tool_calls[0]
                 function_args = json.loads(tool_call.function.arguments)
-                action = function_args.get("action", "ERROR")
-                if action == "SET":
-                    duration = function_args.get("duration", "ERROR")
-                    logger.info(f"[IntentTimerMatchClient] TIMER {action} {duration}")
-                    return f"TIMER {action} {duration}"
+                label = function_args.get("label")
+                if label == TimeIntentLabel.TIMESTAMP.value:
+                    timestamp = function_args.get("timestamp")
+                    return TimeIntentResult(label, timestamp)
                 else:
-                    logger.info(f"[IntentTimerMatchClient] TIMER {action}")
-                    return f"TIMER {action}"
+                    return TimeIntentResult(label)
             else:
-                return "ERROR"
+                return TimeIntentResult(TimeIntentLabel.EXTRA.value)
                 
         except Exception as e:
-            logger.error(f"[IntentTimerMatchClient] {e}", exc_info=True)
-            return "EXTRA"
+            logger.error(f"[IntentTimeMatchClient] {e}", exc_info=True)
+            return TimeIntentResult(TimeIntentLabel.EXTRA.value)

@@ -1,3 +1,4 @@
+from enum import Enum
 from src.models import IntentProvider
 
 class Intent:
@@ -13,3 +14,12 @@ class Intent:
             return intent
         else:
             return "EXTRA"
+
+class NLUIntentLabel(str, Enum):
+    NEXT = "NEXT"
+    PREV = "PREV"
+    TIMER_SET = "TIMER SET"
+    TIMER_STOP = "TIMER STOP"
+    TIMER_CHECK = "TIMER CHECK"
+    EXTRA = "EXTRA"
+    WRONG = "WRONG"
