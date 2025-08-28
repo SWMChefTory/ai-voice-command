@@ -16,7 +16,7 @@ COPY ./nest.proto ./
 
 RUN uv venv && uv sync
 
-COPY llm ./assets
+COPY ./llm ./llm
 COPY ./src ./src
 
 ENV PATH="/app/.venv/bin:$PATH"
