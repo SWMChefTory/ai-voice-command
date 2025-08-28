@@ -43,3 +43,15 @@ class CaptionLoaderException(IntentException):
 class StepsLoaderException(IntentException):
     def __init__(self, code: IntentErrorCode):
         super().__init__(code)
+
+class IntentStrategyException(IntentException):
+    """전략 처리 중 발생하는 예외"""
+    def __init__(self, code: IntentErrorCode, strategy_name: str = ""):
+        super().__init__(code)
+        self.strategy_name = strategy_name
+
+class IntentValidationException(IntentException):
+    """의도 검증 실패 예외"""
+    def __init__(self, code: IntentErrorCode, invalid_intent: str = ""):
+        super().__init__(code)
+        self.invalid_intent = invalid_intent

@@ -4,6 +4,7 @@ from src.exceptions import VoiceCommandException
 
 class SessionErrorCode(Enum):
     SESSION_SERVICE_ERROR = ("SESSION_1", "세션 서비스에 오류가 발생했습니다.")
+    SESSION_NOT_FOUND = ("SESSION_2", "세션을 찾을 수 없습니다.")
 
     def __init__(self, code: str, message: str):
         self._code = code

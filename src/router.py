@@ -6,7 +6,7 @@ from uuid import UUID
 from src.deps import voice_command_service
 from src.exceptions import VoiceCommandException
 from src.service import VoiceCommandService
-from src.models import STTProvider
+from src.enums import STTProvider
 
 router = APIRouter(prefix="/voice-command", tags=["Voice Command"])
 
@@ -18,7 +18,6 @@ async def websocket_endpoint(
     token: str = Query(),
     voice_command_service: VoiceCommandService = Depends(voice_command_service),
 ):
-    session_id = None
 
     await client_websocket.accept()
     

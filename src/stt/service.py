@@ -3,7 +3,7 @@ from uuid import UUID
 from uvicorn.main import logger
 import websockets
 from src.stt.client import NaverClovaStreamingClient, OpenAIStreamingClient, STTClient, VitoStreamingClient
-from src.models import STTProvider
+from src.enums import STTProvider
 
 from src.stt.exceptions import STTErrorCode, STTException
 from src.stt.repository import STTSessionRepository 
@@ -18,17 +18,16 @@ class STTService:
             STTProvider.VITO: vito_client,
         }
 
-    async def create(self, session_id: UUID, provider: STTProvider) -> UUID:
+    async def add(self, session_id: UUID, provider: STTProvider):
         stt_connection = await self.clients[provider].connect_session()
-        self.repository.create_session(session_id, stt_connection)
-        return session_id
+        self.repository.add_session(session_id, stt_connection)
 
     async def send(self, session_id: UUID, chunk: bytes, provider: STTProvider, is_final: bool = False):
         try:
             if not self.repository.is_session_exists(session_id):
                 logger.info(f"[STTService] 세션 {session_id}이 연결되지 않았거나 종료됨. 재연결 시도.")
                 stt_connection = await self.clients[provider].connect_session()
-                self.repository.create_session(session_id, stt_connection)
+                self.repository.add_session(session_id, stt_connection)
 
             stt_connection = self.repository.get_session(session_id)
             await self.clients[provider].send_chunk(stt_connection, chunk, is_final)

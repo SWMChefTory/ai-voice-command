@@ -1,4 +1,5 @@
-from src.models import IntentProvider
+from enum import Enum
+from src.enums import IntentProvider
 
 class Intent:
     def __init__(self, intent: str, base_intent: str, provider: IntentProvider):
@@ -13,3 +14,12 @@ class Intent:
             return intent
         else:
             return "EXTRA"
+
+class NLUIntentLabel(str, Enum):
+    NEXT = "NEXT"
+    PREV = "PREV"
+    TIMER_SET = "TIMER SET"
+    TIMER_STOP = "TIMER STOP"
+    TIMER_CHECK = "TIMER CHECK"
+    EXTRA = "EXTRA"
+    WRONG = "WRONG"

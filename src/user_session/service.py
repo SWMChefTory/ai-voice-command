@@ -1,7 +1,7 @@
 from fastapi import WebSocket
 
 from src.intent.models import Intent
-from src.models import STTProvider
+from src.enums import STTProvider
 from .models import UserSession
 from .repository import UserSessionRepository
 
@@ -15,12 +15,11 @@ class UserSessionService:
         self.client = client
         self.recipe_service = recipe_service
 
-    async def create(self,session_id: UUID, client_websocket: WebSocket, provider: STTProvider, user_id: UUID, recipe_id: UUID) -> UUID:
+    async def add(self, session_id:UUID, client_websocket: WebSocket, provider: STTProvider, user_id: UUID, recipe_id: UUID):
         recipe_captions = await self.recipe_service.get_recipe_caption(recipe_id)
         recipe_steps = await self.recipe_service.get_recipe_steps(recipe_id)
         user_session = UserSession(session_id, client_websocket, user_id, provider, recipe_captions, recipe_steps)
-        self.repository.create_session(session_id, user_session)
-        return session_id
+        self.repository.add_session(session_id, user_session)
 
     async def remove(self, session_id: UUID):
         if self.repository.is_session_exists(session_id):

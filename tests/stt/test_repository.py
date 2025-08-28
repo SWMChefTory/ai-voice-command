@@ -35,7 +35,7 @@ class TestSTTSessionRepository:
             
             def then_should_store_session_with_websocket(self, repository, session_id, mock_websocket):
                 """세션을 저장해야한다"""
-                repository.create_session(session_id, mock_websocket)
+                repository.add_session(session_id, mock_websocket)
                 
                 assert len(repository.sessions) == 1
                 assert repository.sessions[session_id] == mock_websocket
@@ -45,10 +45,10 @@ class TestSTTSessionRepository:
             
             def then_should_overwrite_existing_session(self, repository, session_id, mock_websocket, another_mock_websocket):
                 """기존 세션을 덮어써야한다"""
-                repository.create_session(session_id, mock_websocket)
+                repository.add_session(session_id, mock_websocket)
                 assert repository.sessions[session_id] == mock_websocket
                 
-                repository.create_session(session_id, another_mock_websocket)
+                repository.add_session(session_id, another_mock_websocket)
                 
                 assert repository.sessions[session_id] == another_mock_websocket
                 assert len(repository.sessions) == 1
@@ -77,7 +77,7 @@ class TestSTTSessionRepository:
             
             def then_should_remove_session_successfully(self, repository, session_id, mock_websocket):
                 """세션을 제거해야한다"""
-                repository.create_session(session_id, mock_websocket)
+                repository.add_session(session_id, mock_websocket)
                 assert repository.is_session_exists(session_id)
 
                 repository.remove_session(session_id)
@@ -101,8 +101,8 @@ class TestSTTSessionRepository:
             
             def then_should_remove_only_specified_session(self, repository, session_id, another_session_id, mock_websocket, another_mock_websocket):
                 """세션을 제거해야한다"""
-                repository.create_session(session_id, mock_websocket)
-                repository.create_session(another_session_id, another_mock_websocket)
+                repository.add_session(session_id, mock_websocket)
+                repository.add_session(another_session_id, another_mock_websocket)
                 assert len(repository.sessions) == 2
                 
                 repository.remove_session(session_id)
@@ -127,7 +127,7 @@ class TestSTTSessionRepository:
             
             def then_should_return_correct_websocket(self, repository, session_id, mock_websocket):
                 """올바른 웹소켓을 반환해야한다"""
-                repository.create_session(session_id, mock_websocket)
+                repository.add_session(session_id, mock_websocket)
                 
                 result = repository.get_session(session_id)
                 
@@ -150,7 +150,7 @@ class TestSTTSessionRepository:
             
             def then_should_return_true(self, repository, session_id, mock_websocket):
                 """True를 반환해야한다"""
-                repository.create_session(session_id, mock_websocket)
+                repository.add_session(session_id, mock_websocket)
                 
                 result = repository.is_session_exists(session_id)
                 
@@ -172,7 +172,7 @@ class TestSTTSessionRepository:
             
             def then_should_return_false(self, repository, session_id, mock_websocket):
                 """False를 반환해야한다"""
-                repository.create_session(session_id, mock_websocket)
+                repository.add_session(session_id, mock_websocket)
                 assert repository.is_session_exists(session_id)
                 repository.remove_session(session_id)
                 

@@ -3,7 +3,7 @@ from uuid import UUID
 from pydantic import BaseModel
 from src.exceptions import BusinessException
 from src.intent.models import Intent
-from src.models import STTProvider
+from src.enums import STTProvider
 
 T = TypeVar("T")
 
