@@ -5,10 +5,10 @@ from torch.nn import Module
 import os
 from uvicorn.main import logger
 
-class IntentNLUTimerParseService:
+class IntentNLUTimerExtractService:
     """요리 음성 명령 의도 분류기"""
 
-    def __init__(self, model_path: str = "./assets/ner-model") -> None:
+    def __init__(self, model_path: str = "./llm/ner-model") -> None:
         self.model_path: str = model_path
         self.device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tens = {

@@ -7,13 +7,13 @@ import json
 from src.intent.llm_classify.utils import build_intent_classification_tool
 from src.intent.exceptions import AzureClientException, IntentErrorCode
 from .config import azure_config
-from src.intent.llm_classify.models import IntentResult
+from src.intent.llm_classify.models import LLMClassifyResult
 
 
 class IntentClient(ABC):
 
     @abstractmethod
-    def request_intent(self, user_prompt: str, system_prompt: str, total_steps: int) -> IntentResult:
+    def request_intent(self, user_prompt: str, system_prompt: str, total_steps: int) -> LLMClassifyResult:
         pass
 
 class AzureIntentClient(IntentClient):
@@ -24,7 +24,7 @@ class AzureIntentClient(IntentClient):
             api_version="2024-12-01-preview"
             )  
 
-    def request_intent(self, user_prompt: str, system_prompt: str, total_steps: int) -> IntentResult:
+    def request_intent(self, user_prompt: str, system_prompt: str, total_steps: int) -> LLMClassifyResult:
         try:
             messages: list[ChatCompletionMessageParam] = [
                 {"role": "system", "content": system_prompt},
@@ -45,7 +45,7 @@ class AzureIntentClient(IntentClient):
                 tool_call = message.tool_calls[0]
                 function_args = json.loads(tool_call.function.arguments)
                 intent = function_args.get("intent", "ERROR")
-                return IntentResult(intent)
+                return LLMClassifyResult(intent)
             else:
                 raise AzureClientException(IntentErrorCode.AZURE_REQUEST_SEND_ERROR)
                 

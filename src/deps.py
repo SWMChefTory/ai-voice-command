@@ -12,7 +12,6 @@ from src.intent.llm_classify.service import IntentLLMClassifyService
 from src.intent.llm_timer_match.service import IntentTimerMatchService
 from src.service import VoiceCommandService
 from src.user_session.client import UserSessionClient, UserSessionClientImpl
-from src.intent.utils import CaptionLoader, StepsLoader
 from src.stt.client import NaverClovaStreamingClient, OpenAIStreamingClient, VitoStreamingClient
 from src.user_session.repository import UserSessionRepository, UserSessionRepositoryImpl
 from src.stt.repository import STTSessionRepository, STTSessionRepositoryImpl
@@ -24,7 +23,7 @@ from src.auth.service import AuthService
 from src.auth.client import AuthClient, CheftoryAuthClient
 from src.user_session.recipe.service import RecipeService
 from src.user_session.recipe.client import RecipeCheftoryClient, RecipeClient
-from src.intent.nlu_timer_parse.service import IntentNLUTimerParseService
+from src.intent.nlu_timer_extract.service import IntentNLUTimerExtractService
 
 @lru_cache
 def auth_client() -> AuthClient:
@@ -45,14 +44,6 @@ def intent_time_match_client() -> IntentTimeMatchClient:
 @lru_cache
 def intent_timer_match_client() -> IntentTimerMatchClient:
     return AzureIntentTimerMatchClient()
-
-@lru_cache
-def caption_loader() -> CaptionLoader:
-    return CaptionLoader()
-
-@lru_cache
-def steps_loader() -> StepsLoader:
-    return StepsLoader()
 
 @lru_cache
 def prompt_generator() -> PromptGenerator:
@@ -116,8 +107,8 @@ def intent_timer_match_service() -> IntentTimerMatchService:
     )
 
 @lru_cache
-def intent_nlu_timer_parse_service() -> IntentNLUTimerParseService:
-    return IntentNLUTimerParseService() 
+def intent_nlu_timer_parse_service() -> IntentNLUTimerExtractService:
+    return IntentNLUTimerExtractService()
 
 @lru_cache
 def recipe_client() -> RecipeClient:
@@ -168,8 +159,6 @@ def llm_service() -> LLMService:
 @lru_cache
 def intent_service() -> IntentService:
     return IntentService(
-        caption_loader  = caption_loader(),
-        steps_loader    = steps_loader(),
         nlu_service = nlu_service(),
         llm_service = llm_service(),
     )

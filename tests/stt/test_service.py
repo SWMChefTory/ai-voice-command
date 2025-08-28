@@ -64,10 +64,10 @@ class TestSTTService:
                 """세션을 생성해야한다"""
                 mock_client.connect_session.return_value = mock_websocket
                 
-                await service.create(session_id)
+                await service.add(session_id)
                 
                 mock_client.connect_session.assert_called_once()
-                mock_repository.create_session.assert_called_once_with(session_id, mock_websocket)
+                mock_repository.add_session.assert_called_once_with(session_id, mock_websocket)
 
     class GivenStreamAudio:
         """오디오를 스트리밍해야 할 때"""
@@ -100,7 +100,7 @@ class TestSTTService:
                 await service.send(session_id, audio_chunk)
                 
                 mock_client.connect_session.assert_called_once()    
-                mock_repository.create_session.assert_called_once_with(session_id, mock_websocket)
+                mock_repository.add_session.assert_called_once_with(session_id, mock_websocket)
                 mock_client.send_chunk.assert_called_once_with(mock_websocket, audio_chunk)
 
         class WhenClientSendFails:

@@ -3,7 +3,7 @@ from typing import Any, Dict
 from uuid import UUID
 class STTSessionRepository(ABC):
     @abstractmethod
-    def create_session(self, session_id: UUID, connection: Any):
+    def add_session(self, session_id: UUID, connection: Any):
         pass
     
     @abstractmethod
@@ -23,7 +23,7 @@ class STTSessionRepositoryImpl(STTSessionRepository):
     def __init__(self):
         self.sessions : Dict[UUID, Any] = {}
 
-    def create_session(self, session_id: UUID, connection: Any):
+    def add_session(self, session_id: UUID, connection: Any):
         self.sessions[session_id] = connection
 
     def remove_session(self, session_id: UUID):

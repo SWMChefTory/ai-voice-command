@@ -1,6 +1,6 @@
 from enum import Enum
 
-class NLUIntentLabel(str, Enum):
+class NLUClassifyLabel(str, Enum):
     NEXT = "NEXT"
     PREV = "PREV"
     TIMER_SET = "TIMER SET"
@@ -9,12 +9,12 @@ class NLUIntentLabel(str, Enum):
     EXTRA = "EXTRA"
     WRONG = "WRONG"
 
-class NLUIntentResult:
+class NLUClassifyResult:
     def __init__(self, raw_label: str):
         try:
-            self.label = NLUIntentLabel(raw_label)
+            self.label = NLUClassifyLabel(raw_label)
         except ValueError:
-            self.label = NLUIntentLabel.WRONG
+            self.label = NLUClassifyLabel.WRONG
 
     def as_string(self) -> str:
         return self.label.value

@@ -1,6 +1,6 @@
 from uuid import UUID
 from fastapi import WebSocket
-from src.models import STTProvider
+from src.enums import STTProvider
 from src.user_session.recipe.models import RecipeCaption, RecipeStep
 from typing import List
 

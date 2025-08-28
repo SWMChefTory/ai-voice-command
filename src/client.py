@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import httpx
 from uvicorn.main import logger
 from src.intent.models import Intent
-from src.models import STTProvider
+from src.enums import STTProvider
 from src.schemas import VoiceCommandRequest
 from .config import voice_command_config
 from uuid import UUID

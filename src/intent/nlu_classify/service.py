@@ -5,24 +5,24 @@ import torch
 from torch.nn import Module
 import os
 from uvicorn.main import logger
-from src.intent.nlu_classify.models import NLUIntentLabel, NLUIntentResult
+from src.intent.nlu_classify.models import NLUClassifyLabel, NLUClassifyResult
 
 
 class IntentNLUClassifyService:
     """요리 음성 명령 의도 분류기"""
 
-    def __init__(self, model_path: str = "./assets/nlu-model") -> None:
+    def __init__(self, model_path: str = "./llm/nlu-model") -> None:
         self.model_path: str = model_path
         self.device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.label_map: Dict[int, NLUIntentLabel] = {
-            0: NLUIntentLabel.NEXT,
-            1: NLUIntentLabel.PREV,
-            2: NLUIntentLabel.TIMER_SET,
-            3: NLUIntentLabel.TIMER_STOP,
-            4: NLUIntentLabel.TIMER_CHECK,
-            5: NLUIntentLabel.TIMER_SET,
-            6: NLUIntentLabel.EXTRA,
-            7: NLUIntentLabel.WRONG
+        self.label_map: Dict[int, NLUClassifyLabel] = {
+            0: NLUClassifyLabel.NEXT,
+            1: NLUClassifyLabel.PREV,
+            2: NLUClassifyLabel.TIMER_SET,
+            3: NLUClassifyLabel.TIMER_STOP,
+            4: NLUClassifyLabel.TIMER_CHECK,
+            5: NLUClassifyLabel.TIMER_SET,
+            6: NLUClassifyLabel.EXTRA,
+            7: NLUClassifyLabel.WRONG
         }
         self.tokenizer = cast(PreTrainedTokenizerBase, None)
         self.model = cast(PreTrainedModel, None)
@@ -44,7 +44,7 @@ class IntentNLUClassifyService:
             logger.error(f"모델 로딩 실패: {e}")
             raise
 
-    def match_intent(self, text: str) -> NLUIntentResult:
+    def match_intent(self, text: str) -> NLUClassifyResult:
         try:
             encoding = cast(Mapping[str, torch.Tensor], self.tokenizer(
                 text,
@@ -64,14 +64,14 @@ class IntentNLUClassifyService:
 
 
             if confidence < 0.9:
-                return NLUIntentResult(NLUIntentLabel.EXTRA)
+                return NLUClassifyResult(NLUClassifyLabel.EXTRA)
 
             if predicted_idx not in self.label_map:
                 logger.error(f"[IntentNLUClassifyService]: 의도 분류 실패: {predicted_idx}")
-                return NLUIntentResult(NLUIntentLabel.EXTRA)
+                return NLUClassifyResult(NLUClassifyLabel.EXTRA)
 
-            return NLUIntentResult(self.label_map[predicted_idx])
+            return NLUClassifyResult(self.label_map[predicted_idx])
         
         except Exception as e:
             logger.error(f"[IntentNLUClassifyService]: 의도 분류 실패: {e}")
-            return NLUIntentResult(NLUIntentLabel.EXTRA)
+            return NLUClassifyResult(NLUClassifyLabel.EXTRA)

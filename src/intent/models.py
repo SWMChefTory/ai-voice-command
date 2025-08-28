@@ -1,5 +1,5 @@
 from enum import Enum
-from src.models import IntentProvider
+from src.enums import IntentProvider
 
 class Intent:
     def __init__(self, intent: str, base_intent: str, provider: IntentProvider):

@@ -1,7 +1,7 @@
 from uuid import UUID
 from fastapi import WebSocket
 from src.intent.service import IntentService
-from src.models import STTProvider
+from src.enums import STTProvider
 from src.stt.service import STTService
 from src.user_session.service import UserSessionService
 from uuid import uuid4
@@ -21,8 +21,8 @@ class VoiceCommandService:
     
     async def start_session(self, client_websocket: WebSocket, provider: STTProvider, user_id: UUID, recipe_id: UUID) -> UUID:
         session_id = uuid4()
-        await self.user_session_service.create(session_id, client_websocket, provider, user_id, recipe_id)
-        await self.stt_service.create(session_id, provider)
+        await self.user_session_service.add(session_id, client_websocket, provider, user_id, recipe_id)
+        await self.stt_service.add(session_id, provider)
         return session_id
         
     async def stream_audio(self, session_id: UUID, chunk: bytes, is_final: bool):
