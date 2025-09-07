@@ -178,7 +178,7 @@ class NaverClovaStreamingClient(STTClient):
                 },
                   "keywordBoosting": {
                     "boostings": [
-                        {"words": self._config.boostings, "weight": 1.0},
+                        {"words": self._config.boostings, "weight": 5.0},
                     ]
                 },
             }
