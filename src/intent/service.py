@@ -11,13 +11,15 @@ from src.user_session.recipe.models import RecipeCaption, RecipeStep
 from typing import List, Optional
 from src.intent.nlu_timer_extract.service import IntentNLUTimerExtractService
 from uvicorn.main import logger
+from src.intent.regex_keyword_spotting.service import RegexKeywordSpottingService
 
 class NLUService:
     """NLU 기반 인텐트 분석 서비스"""
     
     def __init__(self,
                  nlu_classify_service: IntentNLUClassifyService,
-                 nlu_timer_parse_service: IntentNLUTimerExtractService):
+                 nlu_timer_parse_service: IntentNLUTimerExtractService,
+                 ):
         self.nlu_classify_service = nlu_classify_service
         self.nlu_timer_parse_service = nlu_timer_parse_service
     
@@ -70,19 +72,36 @@ class LLMService:
         else:
             return Intent(classify_intent.as_string(), text, IntentProvider.GPT4_1)
 
+class RegexService:
+    """정규식 기반 인텐트 분석 서비스"""
+    
+    def __init__(self, regex_keyword_spotting_service: RegexKeywordSpottingService):
+        self.regex_keyword_spotting_service = regex_keyword_spotting_service
+    
+    def analyze_intent(self, text: str) -> Intent | None:
+        return self.regex_keyword_spotting_service.detect(text)
+
 
 class IntentService:
     """인텐트 분석 서비스"""
     
     def __init__(self,
                  nlu_service: NLUService,
-                 llm_service: LLMService):
+                 llm_service: LLMService,
+                 regex_service: RegexService
+                 ):
         self.nlu_service = nlu_service
         self.llm_service = llm_service
-    
+        self.regex_service = regex_service
     async def analyze(self, base_intent: str, recipe_captions: List[RecipeCaption],
                       recipe_steps: List[RecipeStep]) -> Intent:
         try:
+
+            regex_result = self.regex_service.analyze_intent(base_intent)
+            if regex_result:
+                logger.info(f"[IntentService]: Regex 결과: {regex_result.intent}")
+                return regex_result
+
             nlu_result = self.nlu_service.analyze_intent(base_intent)
             if nlu_result:
                 logger.info(f"[IntentService]: NLU 결과: {nlu_result.intent}")
