@@ -1,8 +1,9 @@
 from pydantic import Field
+from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-COMMAND_KEYWORDS = [
-    "다음", "다음 단계", "넘어가", "계속",
+COMMAND_KEYWORDS: List[str] = [
+    "토리야", "다음", "다음 단계", "넘어가", "계속",
     "이전", "전 단계", "뒤로",
 ]
 
@@ -39,6 +40,7 @@ class NaverClovaConfig(BaseSettings):
     use_period_epd: bool = True
     gap_threshold: int = 400
     duration_threshold: int = 4000
+    boostings: str = ",".join(COMMAND_KEYWORDS)
 
     model_config = SettingsConfigDict(
         env_file=".env",
