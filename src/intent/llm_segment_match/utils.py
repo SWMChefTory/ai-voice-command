@@ -1,13 +1,13 @@
 import textwrap
 from typing import Dict, Any, List
 
-from src.user_session.recipe.models import RecipeCaption
+from src.user_session.recipe.models import RecipeStep
 
 class PromptGenerator:
     def __init__(self):
         pass
         
-    def generate_secondary_system_prompt(self, captions: List[RecipeCaption]) -> str:
+    def generate_secondary_system_prompt(self, steps: List[RecipeStep]) -> str:
         return textwrap.dedent(f"""
         당신은 요리 영상의 **시간 구간 질의 분류기**입니다.
 
@@ -25,7 +25,7 @@ class PromptGenerator:
         classify_recipe_time_intent(label="<TIMESTAMP|EXTRA>", timestamp=<정수, TIMESTAMP일 때만>)
 
         ### 현재 요리 영상의 시간 구간 목록:
-        {chr(10).join(map(str, captions))}
+        {chr(10).join(map(str, steps))}
         """).strip()
 
 

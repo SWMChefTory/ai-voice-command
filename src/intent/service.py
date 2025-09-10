@@ -7,7 +7,7 @@ from src.intent.nlu_classify.service import IntentNLUClassifyService
 from src.intent.llm_classify.service import IntentLLMClassifyService
 from src.intent.llm_timer_match.service import IntentTimerMatchService
 from src.enums import IntentProvider
-from src.user_session.recipe.models import RecipeCaption, RecipeStep
+from src.user_session.recipe.models import RecipeStep
 from typing import List, Optional
 from src.intent.nlu_timer_extract.service import IntentNLUTimerExtractService
 from uvicorn.main import logger
@@ -55,12 +55,11 @@ class LLMService:
         self.time_match_service = time_match_service
         self.timer_match_service = timer_match_service
     
-    def analyze_intent(self, text: str, recipe_captions: List[RecipeCaption], 
-                      recipe_steps: List[RecipeStep]) -> Intent:
+    def analyze_intent(self, text: str, recipe_steps: List[RecipeStep]) -> Intent:
         classify_intent = self.classify_service.classify_intent(text, len(recipe_steps))
         
         if classify_intent.label == LLMClassifyLabel.TIMESTAMP:
-            timestamp_intent = self.time_match_service.time_match(text, recipe_captions)
+            timestamp_intent = self.time_match_service.time_match(text, recipe_steps)
             return Intent(timestamp_intent.as_string(), text, IntentProvider.GPT4_1)
         
         elif classify_intent.label == LLMClassifyLabel.TIMER:
@@ -93,8 +92,7 @@ class IntentService:
         self.nlu_service = nlu_service
         self.llm_service = llm_service
         self.regex_service = regex_service
-    async def analyze(self, base_intent: str, recipe_captions: List[RecipeCaption],
-                      recipe_steps: List[RecipeStep]) -> Intent:
+    async def analyze(self, base_intent: str, recipe_steps: List[RecipeStep]) -> Intent:
         try:
 
             regex_result = self.regex_service.analyze_intent(base_intent)
@@ -107,7 +105,7 @@ class IntentService:
                 logger.info(f"[IntentService]: NLU 결과: {nlu_result.intent}")
                 return nlu_result
             
-            llm_result = self.llm_service.analyze_intent(base_intent, recipe_captions, recipe_steps)
+            llm_result = self.llm_service.analyze_intent(base_intent, recipe_steps)
             logger.info(f"[IntentService]: LLM 결과: {llm_result.intent}")
             return llm_result
             
