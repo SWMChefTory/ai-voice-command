@@ -175,7 +175,12 @@ class NaverClovaStreamingClient(STTClient):
                     "usePeriodEpd": self._config.use_period_epd,
                     "gapThreshold": self._config.gap_threshold,
                     "durationThreshold": self._config.duration_threshold,
-                }
+                },
+                  "keywordBoosting": {
+                    "boostings": [
+                        {"words": self._config.boostings, "weight": 5.0},
+                    ]
+                },
             }
             
             config_request = nest_pb2.NestRequest( # type: ignore

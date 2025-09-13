@@ -24,8 +24,13 @@ from src.auth.client import AuthClient, CheftoryAuthClient
 from src.user_session.recipe.service import RecipeService
 from src.user_session.recipe.client import RecipeCheftoryClient, RecipeClient
 from src.intent.nlu_timer_extract.service import IntentNLUTimerExtractService
+
 from src.objectstore.client import ObjectStoreClient
 from src.objectstore.service import ObjectStoreService
+
+from src.intent.regex_keyword_spotting.service import RegexKeywordSpottingService
+from src.intent.service import RegexService
+
 
 @lru_cache
 def auth_client() -> AuthClient:
@@ -113,6 +118,10 @@ def intent_classify_service() -> IntentLLMClassifyService:
     )
 
 @lru_cache
+def regex_keyword_spotting_service() -> RegexKeywordSpottingService:
+    return RegexKeywordSpottingService()
+
+@lru_cache
 def intent_timer_match_service() -> IntentTimerMatchService:
     return IntentTimerMatchService(
         prompt_generator = timer_match_prompt_generator(),
@@ -170,11 +179,18 @@ def llm_service() -> LLMService:
     )
 
 @lru_cache
+def regex_service() -> RegexService:
+    return RegexService(
+        regex_keyword_spotting_service = regex_keyword_spotting_service(),
+    )
+
+@lru_cache
 def intent_service() -> IntentService:
     return IntentService(
         nlu_service = nlu_service(),
         llm_service = llm_service(),
-    )
+        regex_service = regex_service(),
+        )
 
 @lru_cache
 def voice_command_service() -> VoiceCommandService:

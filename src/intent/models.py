@@ -1,4 +1,3 @@
-from enum import Enum
 from src.enums import IntentProvider
 
 """
@@ -14,18 +13,9 @@ class Intent:
         self.provider = provider
 
     def _validate_intent(self, intent: str) -> str:
-        if intent in ["NEXT", "PREV", "EXTRA"]:
+        if intent in ["NEXT", "PREV", "EXTRA", "WAKEWORD"]:
             return intent
         elif intent.startswith("STEP") or intent.startswith("TIMESTAMP") or intent.startswith("TIMER"):
             return intent
         else:
             return "EXTRA"
-
-class NLUIntentLabel(str, Enum):
-    NEXT = "NEXT"
-    PREV = "PREV"
-    TIMER_SET = "TIMER SET"
-    TIMER_STOP = "TIMER STOP"
-    TIMER_CHECK = "TIMER CHECK"
-    EXTRA = "EXTRA"
-    WRONG = "WRONG"
