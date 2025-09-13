@@ -5,6 +5,8 @@ description = "LLM others"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "boto3==1.40.21",
+    "boto3-stubs[s3]==1.40.21",
     "dotenv>=0.9.9",
     "fastapi>=0.116.1",
     "grpcio-tools>=1.73.1",

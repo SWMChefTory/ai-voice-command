@@ -18,7 +18,7 @@ class UserSessionClient(ABC):
         pass
 
     @abstractmethod
-    async def send_result(self, client_websocket: WebSocket, result: Intent):
+    async def send_result(self, client_websocket: WebSocket, result: Intent, start: int, end: int):
         pass
 
 class UserSessionClientImpl(UserSessionClient):
@@ -38,6 +38,6 @@ class UserSessionClientImpl(UserSessionClient):
         else:
             await client_websocket.send_json(IntervalErrorResponse(error).model_dump())
             
-    async def send_result(self, client_websocket: WebSocket, result : Intent):
-        response = UserSessionResponse.from_result(result)
+    async def send_result(self, client_websocket: WebSocket, result : Intent, start: int, end: int):
+        response = UserSessionResponse.from_result(result, start, end)
         await client_websocket.send_json(SuccessResponse(response).model_dump())

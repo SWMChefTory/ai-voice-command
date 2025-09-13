@@ -5,7 +5,7 @@ import json
 import time
 from grpc.aio import StreamStreamCall
 from requests import Session
-from typing import Any, AsyncIterator, Dict, Optional, AsyncGenerator
+from typing import Any, AsyncIterator, Dict, Optional, AsyncGenerator, Tuple
 
 from uvicorn.main import logger
 import websockets
@@ -33,8 +33,8 @@ class STTClient(ABC):
         pass
 
     @abstractmethod
-    async def receive_result(self, connection: Any) -> AsyncIterator[str]:
-        yield ""
+    async def receive_result(self, connection: Any) -> AsyncIterator[Tuple[str, int, int]]:
+        yield ("", 0, 0)
     
 
 
@@ -109,14 +109,14 @@ class VitoStreamingClient(STTClient):
             logger.error(e)
             raise VitoStreamingClientException(STTErrorCode.STT_STREAM_ERROR)
 
-    async def receive_result(self, connection: ClientConnection) -> AsyncIterator[str]:
+    async def receive_result(self, connection: ClientConnection) -> AsyncIterator[Tuple[str, int, int]]:
         async for msg in connection:
             data = json.loads(msg)
             if not data.get("final"):
                 continue
             if not data.get("alternatives"):
                 continue
-            yield data["alternatives"][0]["text"] 
+            yield data["alternatives"][0]["text"], 0, 0
 
 
 class NaverClovaStreamingClient(STTClient):
@@ -205,12 +205,13 @@ class NaverClovaStreamingClient(STTClient):
                     extra_contents=extra_contents
                 )
             )
+            
             await connection.write(data_request) # type: ignore
         except Exception as e:
             logger.error(e)
             raise NaverClovaStreamingClientException(STTErrorCode.STT_STREAM_ERROR)
 
-    async def receive_result(self, connection: StreamStreamCall) -> AsyncIterator[str]: # type: ignore
+    async def receive_result(self, connection: StreamStreamCall) -> AsyncIterator[Tuple[str, int, int]]: # type: ignore
         try:
             async for response in connection: # type: ignore
                 if response.contents: # type: ignore
@@ -218,8 +219,10 @@ class NaverClovaStreamingClient(STTClient):
                         result_data = json.loads(response.contents) # type: ignore
                         if "transcription" in result_data:
                             text = result_data["transcription"].get("text", "")
-                            if text and text != " ":
-                                yield text
+                            start = int(result_data["transcription"].get("startTimeStamp", 0))
+                            end = int(result_data["transcription"].get("endTimeStamp", 0))
+                            if text and text != " ":    
+                                yield (text, start, end)
                     except json.JSONDecodeError:
                         yield response.contents # type: ignore
         except Exception as e:
@@ -309,7 +312,7 @@ class OpenAIStreamingClient(STTClient):
 
     async def receive_result(
         self, connection: ClientConnection
-    ) -> AsyncGenerator[str, None]:
+    ) -> AsyncGenerator[Tuple[str, int, int], None]:
         async for msg in connection:
             try:
                 data = json.loads(msg)
@@ -320,4 +323,4 @@ class OpenAIStreamingClient(STTClient):
             if msg_type == "conversation.item.input_audio_transcription.completed":
                 transcript = data.get("transcript", "")
                 if transcript:
-                    yield transcript
+                    yield transcript, 0, 0

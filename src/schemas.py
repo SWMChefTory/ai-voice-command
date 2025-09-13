@@ -41,12 +41,15 @@ class VoiceCommandRequest(BaseModel):
     transcribe: str
     intent: str
     user_id: str
-
+    audio_file_name: str
+    
     @classmethod
-    def from_intent(cls, intent: Intent, user_id: UUID, stt_provider: STTProvider) -> "VoiceCommandRequest":
+    def from_intent(cls, intent: Intent, user_id: UUID, stt_provider: STTProvider, audio_file_name: str) -> "VoiceCommandRequest":
         return cls(
             stt_model=stt_provider.value,
             intent_model=intent.provider.value,
             transcribe=intent.base_intent,
             intent=intent.intent,
-            user_id=str(user_id))
+            user_id=str(user_id),
+            audio_file_name=audio_file_name
+        )
