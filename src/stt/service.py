@@ -1,4 +1,4 @@
-from typing import AsyncIterator, Dict
+from typing import AsyncIterator, Dict, Tuple
 from uuid import UUID
 from uvicorn.main import logger
 import websockets
@@ -44,12 +44,12 @@ class STTService:
             await self.clients[provider].close_session(stt_connection)
             self.repository.remove_session(session_id)
     
-    async def receive(self, session_id: UUID, provider: STTProvider) -> AsyncIterator[str]:
+    async def receive(self, session_id: UUID, provider: STTProvider) -> AsyncIterator[Tuple[str, int, int]]:
         if self.repository.is_session_exists(session_id):
             stt_connection = self.repository.get_session(session_id)
             try:
-                async for text in self.clients[provider].receive_result(stt_connection):
+                async for text, start, end in self.clients[provider].receive_result(stt_connection):
                     logger.info(f"[STTService]: 음성 인식 결과: {text}")
-                    yield text
+                    yield text, start, end
             except websockets.ConnectionClosed:
                 logger.info(f"[STTService]: 세션 {session_id} 연결이 끊어졌습니다.")

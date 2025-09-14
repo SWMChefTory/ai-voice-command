@@ -18,6 +18,7 @@ async def websocket_endpoint(
     token: str = Query(),
     voice_command_service: VoiceCommandService = Depends(voice_command_service),
 ):
+    session_id = None
 
     await client_websocket.accept()
     
@@ -40,7 +41,8 @@ async def websocket_endpoint(
         logger.error(e)
     finally:
         await voice_command_service.end_session(session_id)
-    
+
+#유저 인터페이스로부터 받은 음성을 받아서 지속적으로 클라우드 STT에 전달. 메서드명 passAudioToSTT는 어떤가요?
 async def _process_stt_results(
     client_websocket: WebSocket,
     service: VoiceCommandService,
@@ -56,13 +58,13 @@ async def _process_stt_results(
                 
             is_final = bool(message[0])
             audio_data = message[1:]
-            
             await service.stream_audio(session_id, audio_data, is_final)
         raise ConnectionAbortedError("WebSocket connection closed")
 
     except Exception as e:
         raise e
 
+#STT결과를 받고 의도 분류 후 유저 인터페이스로 전달
 async def _handle_recognition_flow(service: VoiceCommandService, session_id: UUID):
     try:
         await service.stream_intents(session_id)
