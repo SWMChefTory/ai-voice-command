@@ -27,6 +27,13 @@ from src.intent.nlu_timer_extract.service import IntentNLUTimerExtractService
 from src.intent.regex_keyword_spotting.service import RegexKeywordSpottingService
 from src.intent.service import RegexService
 
+from src.objectstore.client import ObjectStoreClient
+from src.objectstore.service import ObjectStoreService
+
+from src.intent.regex_keyword_spotting.service import RegexKeywordSpottingService
+from src.intent.service import RegexService
+
+
 @lru_cache
 def auth_client() -> AuthClient:
     return CheftoryAuthClient()
@@ -60,6 +67,16 @@ def vito_client() -> VitoStreamingClient:
     return VitoStreamingClient()
 
 @lru_cache
+def object_store_client() -> ObjectStoreClient:
+    return ObjectStoreClient()
+
+@lru_cache
+def object_store_service() -> ObjectStoreService:
+    return ObjectStoreService(
+        object_store_client = object_store_client(),
+    )
+
+@lru_cache
 def naver_clova_client() -> NaverClovaStreamingClient:
     return NaverClovaStreamingClient()
 
@@ -82,6 +99,7 @@ def time_match_prompt_generator() -> TimeMatchPromptGenerator:
 @lru_cache
 def timer_match_prompt_generator() -> TimerMatchPromptGenerator:
     return TimerMatchPromptGenerator()
+
 
 @lru_cache
 def intent_time_match_service() -> IntentSegmentMatchService:
@@ -184,4 +202,5 @@ def voice_command_service() -> VoiceCommandService:
         user_session_service = user_session_service(),
         auth_service = auth_service(),
         voice_command_client = voice_command_client(),
+        object_store_service = object_store_service(),
     )

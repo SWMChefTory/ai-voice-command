@@ -31,7 +31,7 @@ class STTService:
 
             stt_connection = self.repository.get_session(session_id)
             await self.clients[provider].send_chunk(stt_connection, chunk, is_final)
-
+            
         except STTException:
             raise STTException(STTErrorCode.STT_SERVICE_ERROR)
 
