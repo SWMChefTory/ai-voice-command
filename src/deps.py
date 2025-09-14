@@ -30,9 +30,6 @@ from src.intent.service import RegexService
 from src.objectstore.client import ObjectStoreClient
 from src.objectstore.service import ObjectStoreService
 
-from src.intent.regex_keyword_spotting.service import RegexKeywordSpottingService
-from src.intent.service import RegexService
-
 
 @lru_cache
 def auth_client() -> AuthClient:

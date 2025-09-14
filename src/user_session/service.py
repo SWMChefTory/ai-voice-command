@@ -30,9 +30,9 @@ class UserSessionService:
         user_session = self.repository.get_user_session(session_id)
         await self.client.send_error(user_session.get_websocket(), error)
 
-    async def send_result(self, session_id: UUID, result: Intent, start: int, end: int):
+    async def send_result(self, session_id: UUID, result: Intent):
         user_session = self.repository.get_user_session(session_id)
-        await self.client.send_result(user_session.get_websocket(), result, start, end)
+        await self.client.send_result(user_session.get_websocket(), result)
 
     def get_session(self, session_id: UUID) -> UserSession:
         return self.repository.get_user_session(session_id)
