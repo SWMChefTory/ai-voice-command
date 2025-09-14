@@ -24,6 +24,8 @@ from src.auth.client import AuthClient, CheftoryAuthClient
 from src.user_session.recipe.service import RecipeService
 from src.user_session.recipe.client import RecipeCheftoryClient, RecipeClient
 from src.intent.nlu_timer_extract.service import IntentNLUTimerExtractService
+from src.intent.regex_keyword_spotting.service import RegexKeywordSpottingService
+from src.intent.service import RegexService
 
 from src.objectstore.client import ObjectStoreClient
 from src.objectstore.service import ObjectStoreService
