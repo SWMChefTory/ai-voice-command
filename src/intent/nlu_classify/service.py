@@ -21,8 +21,10 @@ class IntentNLUClassifyService:
             3: NLUClassifyLabel.TIMER_STOP,
             4: NLUClassifyLabel.TIMER_CHECK,
             5: NLUClassifyLabel.TIMER_SET,
-            6: NLUClassifyLabel.EXTRA,
-            7: NLUClassifyLabel.WRONG
+            6: NLUClassifyLabel.VIDEO_PLAY,
+            7: NLUClassifyLabel.VIDEO_STOP,
+            8: NLUClassifyLabel.EXTRA,
+            9: NLUClassifyLabel.WRONG
         }
         self.tokenizer = cast(PreTrainedTokenizerBase, None)
         self.model = cast(PreTrainedModel, None)
