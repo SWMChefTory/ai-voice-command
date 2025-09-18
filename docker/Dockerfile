@@ -7,17 +7,17 @@ WORKDIR /app
 RUN curl -Ls https://astral.sh/uv/install.sh | sh && \
     ln -s /root/.local/bin/uv /usr/local/bin/uv
 
-COPY ./pyproject.toml ./
-COPY ./uv.lock ./
+COPY ../pyproject.toml ./
+COPY ../uv.lock ./
 
-COPY ./nest_pb2.py ./
-COPY ./nest_pb2_grpc.py ./
-COPY ./nest.proto ./
+COPY ../nest_pb2.py ./
+COPY ../nest_pb2_grpc.py ./
+COPY ../nest.proto ./
 
 RUN uv venv && uv sync
 
-COPY ./llm ./llm
-COPY ./src ./src
+COPY ../llm ./llm
+COPY ../src ./src
 
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app:$PYTHONPATH"
