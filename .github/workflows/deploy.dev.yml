@@ -42,7 +42,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             mkdir -p cheftory-ai-voice-command-server
-            mkdir -p cheftory-ai-voice-command-server/docker
 
       - name: Copy docker-compose.dev.yml to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -50,9 +49,9 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "./docker/docker-compose.dev.yml"
-          target: "/home/ubuntu/cheftory-ai-voice-command-server/"
-          strip_components: 0
+          source: "docker/docker-compose.dev.yml"
+          target: "/home/ubuntu/cheftory-ai-voice-command-server"
+          strip_components: 1
 
       - name: Create .env on EC2
         uses: appleboy/ssh-action@v1
@@ -89,7 +88,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd cheftory-ai-voice-command-server/docker
+            cd cheftory-ai-voice-command-server
             
             # Docker Hub에 로그인
             echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | sudo docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
