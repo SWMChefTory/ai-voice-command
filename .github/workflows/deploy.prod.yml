@@ -96,15 +96,11 @@ jobs:
             # docker-compose.prod.yml 이미지 이름 수정
             sed -i "s|image: cheftory-ai-voice-command-server:latest|image: ${{ secrets.DOCKER_HUB_USERNAME }}/cheftory-ai-voice-command-server:latest|g" docker-compose.prod.yml
             
-            # 수정된 내용 확인
-            echo "=== After modification ==="
-            cat docker-compose.prod.yml
-            
             # 기존 컨테이너 정리
-            sudo docker-compose stop || true
-            sudo docker-compose rm -f || true
+            sudo docker-compose -f docker-compose.prod.yml stop || true
+            sudo docker-compose -f docker-compose.prod.yml rm -f || true
             sudo docker rmi ${{ secrets.DOCKER_HUB_USERNAME }}/cheftory-ai-voice-command-server:latest || true
             
             # 새 이미지 pull 및 실행
-            sudo docker-compose pull
-            sudo docker-compose up -d
+            sudo docker-compose -f docker-compose.prod.yml pull
+            sudo docker-compose -f docker-compose.prod.yml up -d
