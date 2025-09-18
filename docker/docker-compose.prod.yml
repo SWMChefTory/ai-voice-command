@@ -1,0 +1,15 @@
+services:
+  ai-voice-command:
+    image: cheftory-ai-voice-command-server:latest
+    ports:
+      - "8000"
+    networks:
+      - cheftory_network
+    env_file:
+      - ../.env
+    restart: always
+
+networks:
+  cheftory_network:
+    name: cheftory_network
+    driver: bridge
