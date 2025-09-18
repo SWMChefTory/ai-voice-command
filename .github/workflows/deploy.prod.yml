@@ -51,7 +51,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "docker/docker-compose.prod.yml"
           target: "/home/ubuntu/cheftory-ai-voice-command-server"
-          strip_components: 0
+          strip_components: 1
 
       - name: Create .env on EC2
         uses: appleboy/ssh-action@v1
