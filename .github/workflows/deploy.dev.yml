@@ -63,6 +63,7 @@ jobs:
           script: |
             cat <<EOF > /home/ubuntu/cheftory-ai-voice-command-server/.env
             APP_ENV=dev
+            COMPOSE_PROJECT_NAME=cheftory
             AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}
             AZURE_OPENAI_API_VERSION=${{ secrets.AZURE_OPENAI_API_VERSION }}
             AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT }}
