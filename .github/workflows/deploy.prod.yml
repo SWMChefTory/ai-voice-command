@@ -51,7 +51,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "./docker/docker-compose.prod.yml"
-          target: "/home/ubuntu/cheftory-ai-voice-command-server/docker/"
+          target: "/home/ubuntu/cheftory-ai-voice-command-server/"
           strip_components: 0
 
       - name: Create .env on EC2
@@ -93,10 +93,6 @@ jobs:
             # Docker Hub에 로그인
             echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | sudo docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
             
-            # 현재 docker-compose.prod.yml 확인
-            echo "=== Before modification ==="
-            cat docker-compose.prod.yml
-            
             # docker-compose.prod.yml 이미지 이름 수정
             sed -i "s|image: cheftory-ai-voice-command-server:latest|image: ${{ secrets.DOCKER_HUB_USERNAME }}/cheftory-ai-voice-command-server:latest|g" docker-compose.prod.yml
             
@@ -112,6 +108,3 @@ jobs:
             # 새 이미지 pull 및 실행
             sudo docker-compose pull
             sudo docker-compose up -d
-            
-            # 컨테이너 상태 확인
-            sudo docker-compose ps
