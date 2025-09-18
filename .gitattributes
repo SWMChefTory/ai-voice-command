@@ -1,0 +1,5 @@
+*.safetensors filter=lfs diff=lfs merge=lfs -text
+*.bin filter=lfs diff=lfs merge=lfs -text
+*.pt filter=lfs diff=lfs merge=lfs -text
+llm/nlu-model/** filter=lfs diff=lfs merge=lfs -text
+llm/ner-model/** filter=lfs diff=lfs merge=lfs -text

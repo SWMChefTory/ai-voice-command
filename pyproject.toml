@@ -1,0 +1,29 @@
+[project]
+name = "cheftory-ai"
+version = "0.1.0"
+description = "LLM others"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "boto3==1.40.21",
+    "boto3-stubs[s3]==1.40.21",
+    "dotenv>=0.9.9",
+    "fastapi>=0.116.1",
+    "grpcio-tools>=1.73.1",
+    "httpx>=0.28.1",
+    "openai>=1.95.1",
+    "pydantic>=2.11.7",
+    "pydantic-settings>=2.10.1",
+    "pyright>=1.1.403",
+    "pysrt>=1.1.2",
+    "requests>=2.32.4",
+    "torch>=2.8.0",
+    "transformers>=4.55.2",
+    "uvicorn>=0.35.0",
+    "websockets>=15.0.1",
+]
+
+[dependency-groups]
+dev = [
+    "groq>=0.30.0",
+]
