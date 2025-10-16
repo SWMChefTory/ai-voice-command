@@ -23,7 +23,7 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/cheftory-ai-voice-command-server-dev:latest .
+          docker build -f ./docker/Dockerfile -t ${{ secrets.DOCKER_HUB_USERNAME }}/cheftory-ai-voice-command-server-dev:latest .
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/cheftory-ai-voice-command-server-dev:latest
 
   deploy:
