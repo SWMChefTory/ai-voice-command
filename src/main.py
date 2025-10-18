@@ -1,6 +1,8 @@
+import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 import uvicorn
 
 from src.config import get_settings, Settings
@@ -41,6 +43,19 @@ def create_app() -> FastAPI:
 
 app = create_app()
 
+class UvicornMetricsFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        request_line = getattr(record, "request_line", "")
+        if isinstance(request_line, str) and " /metrics" in request_line:
+            return False
+        try:
+            message = record.getMessage()
+        except Exception:
+            message = ""
+        return "/metrics" not in message
+
+logging.getLogger("uvicorn.access").addFilter(UvicornMetricsFilter())
+Instrumentator().instrument(app).expose(app)
 @app.get("/health")
 async def health_check(settings: Settings = Depends(get_settings)):
     return {
