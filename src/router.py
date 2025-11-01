@@ -25,6 +25,7 @@ async def websocket_endpoint(
     try:
         user_id = await voice_command_service.validate_auth_token(token)
     except VoiceCommandException as e:
+        logger.error(f"토큰 검증 실패: {e.code}")
         await client_websocket.close(code=1008, reason=str(e.code))
         return
 
