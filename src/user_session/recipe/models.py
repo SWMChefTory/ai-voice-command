@@ -7,6 +7,15 @@ class RecipeStepDetail:
         self.start = start
         self.text = text
 
+    def __str__(self):
+            return f"{self._format_time(self.start)}: {self.text}"
+    
+    def _format_time(self, seconds: float) -> str:
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        secs = int(seconds % 60)
+        return f'{hours:02d}:{minutes:02d}:{secs:02d}'
+
     @classmethod
     def from_response(cls, response: RecipeStepDetailResponse) -> 'RecipeStepDetail':
         return cls(response.start, response.text)
@@ -18,21 +27,15 @@ class RecipeStep:
         self.subtitle = subtitle
         self.start_time = start_time
         self.details = details
-        self.content = "\n".join([detail.text for detail in details])
 
     def __str__(self):
+        details_str = "\n  ".join([str(detail) for detail in self.details])
         return dedent(f"""\
-            step {self.step}
-            subtitle: {self.subtitle}
-            timeline: {self._format_time(self.start_time)}
-            content: {self.content}
+            step {self.step}: {self.subtitle}
+            details:
+              {details_str}
         """)
 
-    def _format_time(self, seconds: float) -> str:
-        hours = int(seconds // 3600)
-        minutes = int((seconds % 3600) // 60)
-        secs = int(seconds % 60)
-        return f'{hours:02d}:{minutes:02d}:{secs:02d}'
 
     @classmethod
     def from_response(cls, response: RecipeStepResponse) -> 'RecipeStep':
