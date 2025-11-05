@@ -1,7 +1,8 @@
 import textwrap
-from typing import Dict, Any, List
+from typing import List
 
 from src.user_session.recipe.models import RecipeStep
+from openai.types.chat import ChatCompletionToolParam
 
 class PromptGenerator:
     def __init__(self):
@@ -29,12 +30,7 @@ class PromptGenerator:
         """).strip()
 
 
-def build_time_intent_tool() -> Dict[str, Any]:
-    """
-    라벨 기반 시간 구간 분류 도구 정의:
-    - label == 'TIMESTAMP'  → timestamp (integer) 필수
-    - label == 'EXTRA'      → timestamp 금지
-    """
+def build_time_intent_tool() -> ChatCompletionToolParam:
     return {
         "type": "function",
         "function": {
