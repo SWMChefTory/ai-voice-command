@@ -66,8 +66,8 @@ class AzureIntentTimeMatchClient(IntentTimeMatchClient):
     def request_intent(self, user_prompt: str, system_prompt: str) -> LLMSegmentMatchResult:
         try:
             messages: List[ChatCompletionMessageParam] = [
-                {"role": "system", "content": system_prompt},  # type: ignore
-                {"role": "user", "content": user_prompt},  # type: ignore
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
             ]
             tools: List[ChatCompletionToolParam] = [build_time_intent_tool()]
 
