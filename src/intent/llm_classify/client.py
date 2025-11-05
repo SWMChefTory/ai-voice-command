@@ -3,20 +3,20 @@ from openai import AzureOpenAI, APIError, APITimeoutError, RateLimitError
 from openai.types.chat import ChatCompletionToolParam, ChatCompletionMessageParam
 import json
 from src.intent.llm_classify.utils import build_intent_classification_tool
-from src.intent.exceptions import AzureClientException, IntentErrorCode
+from src.intent.exceptions import AzureClientException
 from .config import azure_config
-from src.intent.llm_classify.models import LLMClassifyResult
+from src.intent.llm_classify.models import LLMClassifyResult, LLMClassifyLabel
 from uvicorn.main import logger
 from typing import Optional, List, Iterable
 
 
-class IntentClient(ABC):
+class IntentClassifyClient(ABC):
 
     @abstractmethod
     def request_intent(self, user_prompt: str, system_prompt: str, total_steps: int) -> LLMClassifyResult:
         pass
 
-class AzureIntentClient(IntentClient):
+class AzureIntentClassifyClient(IntentClassifyClient):
     def __init__(self):
         self.client = AzureOpenAI(
             api_key=azure_config.api_key,
@@ -39,7 +39,7 @@ class AzureIntentClient(IntentClient):
                 model=model,
                 tools=tools,
                 tool_choice="required",
-                timeout=30,
+                timeout=azure_config.request_timeout,
             )
 
             message = response.choices[0].message
@@ -82,10 +82,10 @@ class AzureIntentClient(IntentClient):
                     return result
 
             logger.error(f"[Azure] All models failed: {self.models}")
-            raise AzureClientException(IntentErrorCode.AZURE_REQUEST_SEND_ERROR)
+            return LLMClassifyResult(LLMClassifyLabel.EXTRA.value)
 
         except AzureClientException:
             raise
         except Exception as e:
             logger.error(f"[Azure] Fatal error: {e}", exc_info=True)
-            raise AzureClientException(IntentErrorCode.AZURE_REQUEST_SEND_ERROR)
+            return LLMClassifyResult(LLMClassifyLabel.EXTRA.value)

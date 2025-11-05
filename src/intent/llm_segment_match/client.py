@@ -36,7 +36,7 @@ class AzureIntentTimeMatchClient(IntentTimeMatchClient):
                 model=model,
                 tools=tools,
                 tool_choice="required",
-                timeout=30,
+                timeout=azure_config.request_timeout,
             )
 
             message = response.choices[0].message
