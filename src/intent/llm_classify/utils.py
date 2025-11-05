@@ -1,4 +1,5 @@
 import textwrap
+from openai.types.chat import ChatCompletionToolParam
 
 
 class PromptGenerator:
@@ -32,27 +33,29 @@ class PromptGenerator:
         classify_cooking_intent(intent="<위 라벨 중 하나>")
         """).strip()
 
-def build_label_enum(total_steps: int) -> list[str]:
+def _build_label_enum(total_steps: int) -> list[str]:
     return ["NEXT", "PREV", "EXTRA", "TIMESTAMP", "TIMER"] + [f"STEP {i+1}" for i in range(total_steps)]
 
-from typing import Dict, Any
+def build_intent_classification_tool(total_steps: int) -> ChatCompletionToolParam:
+    labels = _build_label_enum(total_steps)
 
-def build_intent_classification_tool(total_steps: int) -> Dict[str, Any]:
     return {
-    "type": "function",
-    "function": {
-        "name": "classify_cooking_intent",
-        "description": "Classify user input into cooking video control intents",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "intent": {
-                    "type": "string",
-                    "enum": build_label_enum(total_steps),
-                    "description": "The classified intent"
+        "type": "function",
+        "function": {
+            "name": "classify_cooking_intent",
+            "description": "Classify user input into cooking video control intents",
+            "strict": True,
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "intent": {
+                        "type": "string",
+                        "enum": labels,
+                        "description": "The classified intent"
+                    }
                 },
-            },
-            "required": ["intent"]
+                "required": ["intent"],
+                "additionalProperties": False
+            }
         }
     }
-}

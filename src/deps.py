@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from src.intent.llm_classify.client import AzureIntentClient, IntentClient
+from src.intent.llm_classify.client import AzureIntentClassifyClient, IntentClassifyClient
 from src.intent.llm_classify.utils import PromptGenerator
 from src.intent.llm_timer_match.client import AzureIntentTimerMatchClient, IntentTimerMatchClient
 from src.intent.llm_segment_match.client import AzureIntentTimeMatchClient, IntentTimeMatchClient
@@ -40,8 +40,8 @@ def voice_command_client() -> VoiceCommandClient:
     return CheftoryVoiceCommandClient()
 
 @lru_cache
-def intent_client() -> IntentClient:
-    return AzureIntentClient()
+def intent_client() -> IntentClassifyClient:
+    return AzureIntentClassifyClient()
 
 @lru_cache
 def intent_time_match_client() -> IntentTimeMatchClient:
