@@ -1,17 +1,18 @@
 from uuid import UUID
 from fastapi import WebSocket
 from src.enums import STTProvider
-from src.user_session.recipe.models import RecipeStep
+from src.user_session.recipe.models import RecipeStep, RecipeIngredient
 from typing import List
 from src.user_session.audio.models import AudioBuffer
 
 class UserSession:
-    def __init__(self, session_id: UUID, websocket: WebSocket, user_id: UUID, provider: STTProvider, recipe_steps: List[RecipeStep]):
+    def __init__(self, session_id: UUID, websocket: WebSocket, user_id: UUID, provider: STTProvider, recipe_steps: List[RecipeStep], recipe_ingredients: List[RecipeIngredient]):
         self.session_id = session_id
         self.websocket = websocket
         self.user_id = user_id
         self.stt_provider = provider    
         self.recipe_steps = recipe_steps
+        self.recipe_ingredients = recipe_ingredients
         self.buffer = AudioBuffer()
         
     def get_session_id(self) -> UUID:
@@ -28,6 +29,9 @@ class UserSession:
     
     def get_recipe_steps(self) -> List[RecipeStep]:
         return self.recipe_steps
+
+    def get_recipe_ingredients(self) -> List[RecipeIngredient]:
+        return self.recipe_ingredients
     
     def get_audio_buffer(self) -> AudioBuffer:
         return self.buffer

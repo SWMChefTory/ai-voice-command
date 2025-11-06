@@ -41,7 +41,7 @@ class VoiceCommandService:
     async def stream_intents(self, session_id: UUID):
         user_session = self.user_session_service.get_session(session_id)
         async for stt_result, start, end in self.stt_service.receive(session_id, user_session.get_stt_provider()):
-            intent = await self.intent_service.analyze(stt_result, user_session.get_recipe_steps())       
+            intent = await self.intent_service.analyze(stt_result, user_session.get_recipe_steps(), user_session.get_recipe_ingredients())
             await self.user_session_service.send_result(session_id, intent)
             await self.voice_command_client.send_result(user_session.get_stt_provider(), intent, user_session.get_user_id(), str(session_id), start, end)
 
