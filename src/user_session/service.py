@@ -16,8 +16,9 @@ class UserSessionService:
         self.recipe_service = recipe_service
 
     async def add(self, session_id:UUID, client_websocket: WebSocket, provider: STTProvider, user_id: UUID, recipe_id: UUID):
-        recipe_steps = await self.recipe_service.get_recipe_steps(recipe_id)    
-        user_session = UserSession(session_id, client_websocket, user_id, provider, recipe_steps)
+        recipe_steps = await self.recipe_service.get_recipe_steps(recipe_id)
+        recipe_ingredients = await self.recipe_service.get_recipe_ingredients(recipe_id)
+        user_session = UserSession(session_id, client_websocket, user_id, provider, recipe_steps, recipe_ingredients)
         self.repository.add_session(session_id, user_session)
 
     async def remove(self, session_id: UUID):

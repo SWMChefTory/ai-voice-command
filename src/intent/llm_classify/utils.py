@@ -16,6 +16,7 @@ class PromptGenerator:
         - STEP 1 … STEP {total_steps}
         - TIMER
         - TIMESTAMP
+        - INGREDIENT
         - EXTRA
 
         ### 분류 규칙:
@@ -23,9 +24,11 @@ class PromptGenerator:
         - PREV: 이전 단계로 이동 요청. 예) "뒤로", "전 단계", "되돌려"
         - STEP n: 특정 단계 요청. 예) "1단계", "두 번째 단계", "마지막 단계"
         - TIMER: 타이머 관련 요청. 예) "5분 타이머 맞춰", "10분 재워"
-        - **TIMESTAMP:** 특정 장면/행동/시간 요청
+        - TIMESTAMP: 특정 장면/행동/시간 요청
             - 장면이나 동작을 언급하며 “언제/어디/어느 부분/다시” 같은 질문 포함
             - 예) "야채 써는 거 뭐야?", "고기 굽는 장면 다시 보여줘", "계란 푸는 부분 언제 나와?", "양파 넣는 부분 어디야?"
+        - INGREDIENT: 재료에 대한 질문, 요청, 양 등과 관련된 발화
+            - 예) "양파 얼마나 넣어야해?", "버터 얼마나 넣어요?"
         - EXTRA: 요리와 무관하거나 일반 대화/인사. 예) "안녕하세요", "이 레시피 맛있나요?"
 
         ### 주의
@@ -34,7 +37,7 @@ class PromptGenerator:
         """).strip()
 
 def _build_label_enum(total_steps: int) -> list[str]:
-    return ["NEXT", "PREV", "EXTRA", "TIMESTAMP", "TIMER"] + [f"STEP {i+1}" for i in range(total_steps)]
+    return ["NEXT", "PREV", "EXTRA", "TIMESTAMP", "TIMER", "INGREDIENT"] + [f"STEP {i+1}" for i in range(total_steps)]
 
 def build_intent_classification_tool(total_steps: int) -> ChatCompletionToolParam:
     labels = _build_label_enum(total_steps)
