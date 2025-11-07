@@ -1,5 +1,5 @@
-from typing import Dict, Any
 import textwrap
+from openai.types.chat import ChatCompletionToolParam
 
 class PromptGenerator:
     def __init__(self):
@@ -50,7 +50,7 @@ class PromptGenerator:
 - 입력: "얼마나 남았어?" → {"action":"TIMER CHECK","duration":null}
 """).strip()
 
-def build_intent_timer_match_tool() -> Dict[str, Any]:
+def build_intent_timer_match_tool() -> ChatCompletionToolParam:
     return {
         "type": "function", 
         "function": {

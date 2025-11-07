@@ -16,3 +16,11 @@ class RecipeStepResponse(BaseModel):
 
 class RecipeStepsResponse(BaseModel):
     steps: List[RecipeStepResponse]
+
+class RecipeIngredientResponse(BaseModel):
+    name: str
+    unit: str
+    amount: int
+
+class RecipeIngredientsResponse(BaseModel):
+    ingredients: List[RecipeIngredientResponse]

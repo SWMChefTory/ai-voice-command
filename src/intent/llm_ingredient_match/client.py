@@ -4,18 +4,18 @@ from openai.types.chat import ChatCompletionToolParam, ChatCompletionMessagePara
 import json
 from typing import Optional, List, Iterable
 from uvicorn.main import logger
-from src.intent.llm_segment_match.utils import build_time_intent_tool
+from src.intent.llm_ingredient_match.utils import build_ingredient_intent_tool
 from .config import azure_config
-from src.intent.llm_segment_match.models import LLMSegmentMatchLabel, LLMSegmentMatchResult
+from .models import LLMIngredientMatchResult, LLMIngredientMatchLabel
 
 
-class IntentTimeMatchClient(ABC):
+class IntentIngredientMatchClient(ABC):
 
     @abstractmethod
-    def request_intent(self, user_prompt: str, system_prompt: str) -> LLMSegmentMatchResult:
+    def request_intent(self, user_prompt: str, system_prompt: str) -> LLMIngredientMatchResult:
         pass
 
-class AzureIntentTimeMatchClient(IntentTimeMatchClient):
+class AzureIntentIngredientClient(IntentIngredientMatchClient):
     def __init__(self) -> None:
         self.client = AzureOpenAI(
             api_key=azure_config.api_key,
@@ -29,7 +29,7 @@ class AzureIntentTimeMatchClient(IntentTimeMatchClient):
             messages: List[ChatCompletionMessageParam],
             tools: Iterable[ChatCompletionToolParam],
             model: str
-    ) -> Optional[LLMSegmentMatchResult]:
+    ) -> Optional[LLMIngredientMatchResult]:
         try:
             response = self.client.chat.completions.create(
                 messages=messages,
@@ -45,47 +45,46 @@ class AzureIntentTimeMatchClient(IntentTimeMatchClient):
                 function_args = json.loads(tool_call.function.arguments)
                 label = function_args.get("label")
 
-                logger.info(f"[AzureTimeMatch] Success with {model}: {label}")
-
-                if label == LLMSegmentMatchLabel.TIMESTAMP.value:
-                    timestamp = function_args.get("timestamp")
-                    return LLMSegmentMatchResult(label, timestamp)
+                if label == LLMIngredientMatchLabel.INGREDIENT.value:
+                    ingredient = function_args.get("ingredient")
+                    logger.info(f"[AzureIngredientMatch] Success with {model}: {label} {ingredient}")
+                    return LLMIngredientMatchResult(label, ingredient)
                 else:
-                    return LLMSegmentMatchResult(label)
+                    logger.info(f"[AzureIngredientMatch] Success with {model}: {label}")
+                    return LLMIngredientMatchResult(label)
             else:
-                logger.warning(f"[AzureTimeMatch] No tool_calls with {model}")
                 return None
 
         except (APIError, APITimeoutError, RateLimitError) as e:
-            logger.warning(f"[AzureTimeMatch] {model} failed: {type(e).__name__} - {e}")
+            logger.warning(f"[AzureIngredientMatch] {model} failed: {type(e).__name__} - {e}")
             return None
         except Exception as e:
-            logger.error(f"[AzureTimeMatch] {model} unexpected error: {e}")
+            logger.error(f"[AzureIngredientMatch] {model} unexpected error: {e}")
             return None
 
-    def request_intent(self, user_prompt: str, system_prompt: str) -> LLMSegmentMatchResult:
+    def request_intent(self, user_prompt: str, system_prompt: str) -> LLMIngredientMatchResult:
         try:
             messages: List[ChatCompletionMessageParam] = [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ]
-            tools: List[ChatCompletionToolParam] = [build_time_intent_tool()]
+            tools: List[ChatCompletionToolParam] = [build_ingredient_intent_tool()]
 
             for i, model in enumerate(self.models):
                 is_fallback = i > 0
                 if is_fallback:
-                    logger.info(f"[AzureTimeMatch] Falling back to: {model}")
+                    logger.info(f"[AzureIngredientMatch] Falling back to: {model}")
 
                 result = self._try_request(messages, tools, model)
 
                 if result:
                     if is_fallback:
-                        logger.warning(f"[AzureTimeMatch] Primary model failed, used fallback: {model}")
+                        logger.warning(f"[AzureIngredientMatch] Primary model failed, used fallback: {model}")
                     return result
 
-            logger.error(f"[AzureTimeMatch] All models failed: {self.models}, returning EXTRA")
-            return LLMSegmentMatchResult(LLMSegmentMatchLabel.EXTRA.value)
+            logger.error(f"[AzureIngredientMatch] All models failed: {self.models}, returning EXTRA")
+            return LLMIngredientMatchResult(LLMIngredientMatchLabel.EXTRA.value)
 
         except Exception as e:
-            logger.error(f"[AzureTimeMatch] Fatal error: {e}", exc_info=True)
-            return LLMSegmentMatchResult(LLMSegmentMatchLabel.EXTRA.value)
+            logger.error(f"[AzureIngredientMatch] Fatal error: {e}", exc_info=True)
+            return LLMIngredientMatchResult(LLMIngredientMatchLabel.EXTRA.value)

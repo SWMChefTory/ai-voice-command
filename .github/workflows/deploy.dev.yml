@@ -67,6 +67,8 @@ jobs:
             AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}
             AZURE_OPENAI_API_VERSION=${{ secrets.AZURE_OPENAI_API_VERSION }}
             AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT }}
+            AZURE_PRIMARY_MODEL=${{ secrets.AZURE_PRIMARY_MODEL }}
+            AZURE_SECONDARY_MODEL=${{ secrets.AZURE_SECONDARY_MODEL }}
             RTZR_CLIENT_ID=${{ secrets.RTZR_CLIENT_ID }}
             RTZR_CLIENT_SECRET=${{ secrets.RTZR_CLIENT_SECRET }}
             CLOVA_ACCESS_TOKEN=${{ secrets.CLOVA_ACCESS_TOKEN }}
