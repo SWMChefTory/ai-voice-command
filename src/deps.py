@@ -2,6 +2,9 @@ from functools import lru_cache
 
 from src.intent.llm_classify.client import AzureIntentClassifyClient, IntentClassifyClient
 from src.intent.llm_classify.utils import PromptGenerator
+from src.intent.llm_ingredient_match.client import AzureIntentIngredientClient, IntentIngredientMatchClient
+from src.intent.llm_ingredient_match.service import IntentIngredientMatchService
+from src.intent.llm_ingredient_match.utils import IngredientMatchPromptGenerator
 from src.intent.llm_timer_match.client import AzureIntentTimerMatchClient, IntentTimerMatchClient
 from src.intent.llm_segment_match.client import AzureIntentTimeMatchClient, IntentTimeMatchClient
 from src.intent.llm_segment_match.utils import PromptGenerator as TimeMatchPromptGenerator
@@ -52,6 +55,10 @@ def intent_timer_match_client() -> IntentTimerMatchClient:
     return AzureIntentTimerMatchClient()
 
 @lru_cache
+def intent_ingredient_match_client() -> IntentIngredientMatchClient:
+    return AzureIntentIngredientClient()
+
+@lru_cache
 def prompt_generator() -> PromptGenerator:
     return PromptGenerator()
 
@@ -97,6 +104,10 @@ def time_match_prompt_generator() -> TimeMatchPromptGenerator:
 def timer_match_prompt_generator() -> TimerMatchPromptGenerator:
     return TimerMatchPromptGenerator()
 
+@lru_cache
+def ingredient_match_prompt_generator() -> IngredientMatchPromptGenerator:
+    return IngredientMatchPromptGenerator()
+
 
 @lru_cache
 def intent_time_match_service() -> IntentSegmentMatchService:
@@ -125,6 +136,13 @@ def intent_timer_match_service() -> IntentTimerMatchService:
     return IntentTimerMatchService(
         prompt_generator = timer_match_prompt_generator(),
         intent_client = intent_timer_match_client(),
+    )
+
+@lru_cache
+def intent_ingredient_match_service() -> IntentIngredientMatchService:
+    return IntentIngredientMatchService(
+        prompt_generator = ingredient_match_prompt_generator(),
+        intent_client = intent_ingredient_match_client(),
     )
 
 @lru_cache
@@ -175,6 +193,7 @@ def llm_service() -> LLMService:
         classify_service = intent_classify_service(),
         time_match_service = intent_time_match_service(),
         timer_match_service = intent_timer_match_service(),
+        ingredient_match_service = intent_ingredient_match_service(),
     )
 
 @lru_cache

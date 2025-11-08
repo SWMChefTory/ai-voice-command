@@ -1,5 +1,5 @@
 from src.user_session.recipe.client import RecipeClient
-from src.user_session.recipe.models import RecipeStep
+from src.user_session.recipe.models import RecipeStep, RecipeIngredient
 from typing import List
 from uuid import UUID
 
@@ -9,3 +9,6 @@ class RecipeService:
 
     async def get_recipe_steps(self, recipe_id: UUID) -> List[RecipeStep]:
         return await self.client.get_recipe_steps(recipe_id)
+
+    async def get_recipe_ingredients(self, recipe_id: UUID) -> List[RecipeIngredient]:
+        return await self.client.get_recipe_ingredients(recipe_id)

@@ -1,6 +1,7 @@
 from textwrap import dedent
 from typing import List
-from src.user_session.recipe.schema import RecipeStepResponse, RecipeStepDetailResponse
+from src.user_session.recipe.schema import RecipeStepResponse, RecipeStepDetailResponse, RecipeIngredientResponse
+
 
 class RecipeStepDetail:
     def __init__(self, start: float, text: str):
@@ -46,4 +47,20 @@ class RecipeStep:
             start_time=response.start,
             details=[RecipeStepDetail.from_response(detail) for detail in response.details]
         )
-    
+
+class RecipeIngredient:
+    def __init__(self, name: str, unit: str, amount: int):
+        self.name = name
+        self.quantity = f"{amount} {unit}"
+
+    def __str__(self):
+        return f"{self.name} {self.quantity}"
+
+    @classmethod
+    def from_response(cls, response: RecipeIngredientResponse) -> 'RecipeIngredient':
+        return cls(
+            name=response.name,
+            unit=response.unit,
+            amount=response.amount
+        )
+

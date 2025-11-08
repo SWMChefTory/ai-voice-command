@@ -1,4 +1,5 @@
 from src.intent.exceptions import IntentErrorCode, IntentException
+from src.intent.llm_ingredient_match.service import IntentIngredientMatchService
 from src.intent.nlu_classify.models import NLUClassifyLabel
 from src.intent.llm_classify.models import LLMClassifyLabel
 from src.intent.models import Intent
@@ -7,7 +8,7 @@ from src.intent.nlu_classify.service import IntentNLUClassifyService
 from src.intent.llm_classify.service import IntentLLMClassifyService
 from src.intent.llm_timer_match.service import IntentTimerMatchService
 from src.enums import IntentProvider
-from src.user_session.recipe.models import RecipeStep
+from src.user_session.recipe.models import RecipeStep, RecipeIngredient
 from typing import List, Optional
 from src.intent.nlu_timer_extract.service import IntentNLUTimerExtractService
 from uvicorn.main import logger
@@ -50,12 +51,15 @@ class LLMService:
     def __init__(self,
                  classify_service: IntentLLMClassifyService,
                  time_match_service: IntentSegmentMatchService,
-                 timer_match_service: IntentTimerMatchService):
+                 timer_match_service: IntentTimerMatchService,
+                 ingredient_match_service: IntentIngredientMatchService,
+                 ):
         self.classify_service = classify_service
         self.time_match_service = time_match_service
         self.timer_match_service = timer_match_service
+        self.ingredient_match_service = ingredient_match_service
     
-    def analyze_intent(self, text: str, recipe_steps: List[RecipeStep]) -> Intent:
+    def analyze_intent(self, text: str, recipe_steps: List[RecipeStep], recipe_ingredients: List[RecipeIngredient]) -> Intent:
         classify_intent = self.classify_service.classify_intent(text, len(recipe_steps))
         
         if classify_intent.label == LLMClassifyLabel.TIMESTAMP:
@@ -68,6 +72,9 @@ class LLMService:
         elif classify_intent.label == LLMClassifyLabel.ERROR:
             logger.error(f"[LLMService]: LLM 인텐트 분류 실패: {classify_intent.as_string()}")
             return Intent(LLMClassifyLabel.EXTRA, text, IntentProvider.GPT4_1)
+        elif classify_intent.label == LLMClassifyLabel.INGREDIENT:
+            ingredient_intent = self.ingredient_match_service.ingredient_match(text, recipe_ingredients)
+            return Intent(ingredient_intent.as_string(), text, IntentProvider.GPT4_1)
         else:
             return Intent(classify_intent.as_string(), text, IntentProvider.GPT4_1)
 
@@ -92,7 +99,7 @@ class IntentService:
         self.nlu_service = nlu_service
         self.llm_service = llm_service
         self.regex_service = regex_service
-    async def analyze(self, base_intent: str, recipe_steps: List[RecipeStep]) -> Intent:
+    async def analyze(self, base_intent: str, recipe_steps: List[RecipeStep], recipe_ingredients: List[RecipeIngredient]) -> Intent:
         try:
 
             regex_result = self.regex_service.analyze_intent(base_intent)
@@ -105,7 +112,7 @@ class IntentService:
                 logger.info(f"[IntentService]: NLU 결과: {nlu_result.intent}")
                 return nlu_result
             
-            llm_result = self.llm_service.analyze_intent(base_intent, recipe_steps)
+            llm_result = self.llm_service.analyze_intent(base_intent, recipe_steps, recipe_ingredients)
             logger.info(f"[IntentService]: LLM 결과: {llm_result.intent}")
             return llm_result
             

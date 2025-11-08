@@ -7,6 +7,7 @@ class LLMClassifyLabel(str, Enum):
     PREV = "PREV"
     STEP = "STEP"
     TIMESTAMP = "TIMESTAMP"
+    INGREDIENT = "INGREDIENT"
     TIMER = "TIMER"
     EXTRA = "EXTRA"
     ERROR = "ERROR"

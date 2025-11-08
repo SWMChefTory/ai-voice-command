@@ -15,7 +15,7 @@ class Intent:
     def _validate_intent(self, intent: str) -> str:
         if intent in ["NEXT", "PREV", "EXTRA", "WAKEWORD"]:
             return intent
-        elif intent.startswith("STEP") or intent.startswith("TIMESTAMP") or intent.startswith("TIMER") or intent.startswith("VIDEO"):
+        elif intent.startswith("STEP") or intent.startswith("TIMESTAMP") or intent.startswith("TIMER") or intent.startswith("VIDEO") or intent.startswith("INGREDIENT"):
             return intent
         else:
             return "EXTRA"
