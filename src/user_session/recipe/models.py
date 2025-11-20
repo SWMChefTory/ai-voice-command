@@ -14,8 +14,8 @@ class RecipeStepDetail:
     def _format_time(self, seconds: float) -> str:
         hours = int(seconds // 3600)
         minutes = int((seconds % 3600) // 60)
-        secs = int(seconds % 60)
-        return f'{hours:02d}:{minutes:02d}:{secs:02d}'
+        secs = seconds % 60
+        return f"{hours:02d}:{minutes:02d}:{secs:06.3f}"
 
     @classmethod
     def from_response(cls, response: RecipeStepDetailResponse) -> 'RecipeStepDetail':

@@ -19,11 +19,11 @@ class PromptGenerator:
         ### 분류 규칙
         - 사용자가 특정 장면/행동/시간을 묻거나 “언제/어디/어느 부분/다시” 류의 요청이면 TIMESTAMP 후보로 판단하되,
           레시피 자막/시간 구간과 매칭이 불가하면 EXTRA로 분류합니다.
-        - 라벨이 TIMESTAMP라면 반드시 가장 적절한 초 단위 timestamp를 함께 반환하세요.
+        - 라벨이 TIMESTAMP라면 반드시 가장 적절한 초 단위 float timestamp 를 함께 반환하세요.
         - 라벨이 EXTRA라면 timestamp를 절대 포함하지 마세요.
 
         ### 반드시 아래 함수 형식으로만 응답하세요:
-        classify_recipe_time_intent(label="<TIMESTAMP|EXTRA>", timestamp=<정수, TIMESTAMP일 때만>)
+        classify_recipe_time_intent(label="<TIMESTAMP|EXTRA>", timestamp=<float, TIMESTAMP일 때만>)
 
         ### 현재 요리 영상의 시간 구간 목록:
         {chr(10).join(map(str, steps))}
@@ -45,9 +45,9 @@ def build_time_intent_tool() -> ChatCompletionToolParam:
                         "description": "시간 구간 매칭이면 TIMESTAMP, 아니면 EXTRA",
                     },
                     "timestamp": {
-                        "type": "integer",
+                        "type": "number",
                         "minimum": 0,
-                        "description": "가장 적절한 레시피 타임스탬프(초). label == TIMESTAMP일 때만 사용",
+                        "description": "가장 적절한 레시피 타임스탬프(float, 초). label == TIMESTAMP일 때만 사용",
                     },
                 },
                 "required": ["label"],

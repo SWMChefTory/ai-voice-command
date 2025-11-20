@@ -7,9 +7,9 @@ class LLMSegmentMatchLabel(str, Enum):
     ERROR = "ERROR"
 
 class LLMSegmentMatchResult:
-    def __init__(self, raw_label: str, timestamp: Optional[int] = None):
+    def __init__(self, raw_label: str, timestamp: Optional[float] = None):
         self.label: LLMSegmentMatchLabel
-        self.timestamp: Optional[int] = None
+        self.timestamp: Optional[float] = None
 
         if raw_label == LLMSegmentMatchLabel.TIMESTAMP.value:
             if timestamp is not None and timestamp >= 0:
