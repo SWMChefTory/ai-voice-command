@@ -21,10 +21,22 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Build and Push Docker image
-        run: |
-          docker build -f ./docker/Dockerfile -t ${{ secrets.DOCKER_HUB_USERNAME }}/cheftory-ai-voice-command-server:latest .
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/cheftory-ai-voice-command-server:latest
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push ARM64 Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/cheftory-ai-voice-command-server:latest
+
 
   deploy:
     environment: production
@@ -93,17 +105,13 @@ jobs:
           script: |
             cd cheftory-ai-voice-command-server
             
-            # Docker Hub에 로그인
             echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | sudo docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
             
-            # docker-compose.prod.yml 이미지 이름 수정
             sed -i "s|image: cheftory-ai-voice-command-server:latest|image: ${{ secrets.DOCKER_HUB_USERNAME }}/cheftory-ai-voice-command-server:latest|g" docker-compose.prod.yml
             
-            # 기존 컨테이너 정리
             sudo docker-compose -f docker-compose.prod.yml stop || true
             sudo docker-compose -f docker-compose.prod.yml rm -f || true
             sudo docker rmi ${{ secrets.DOCKER_HUB_USERNAME }}/cheftory-ai-voice-command-server:latest || true
             
-            # 새 이미지 pull 및 실행
             sudo docker-compose -f docker-compose.prod.yml pull
             sudo docker-compose -f docker-compose.prod.yml up -d
