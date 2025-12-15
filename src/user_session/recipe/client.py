@@ -19,16 +19,19 @@ class RecipeClient(ABC):
 class RecipeCheftoryClient(RecipeClient):
     def __init__(self):
         self.api_base = recipe_config.api_base
+        self.headers = {
+            "X-Country-Code": "KR",
+        }
 
     async def get_recipe_steps(self, recipe_id: UUID) -> List[RecipeStep]:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(headers=self.headers) as client:
             response = await client.get(f"{self.api_base}/papi/v1/recipes/{recipe_id}/steps")
             response.raise_for_status()
             recipe_step_response = RecipeStepsResponse.model_validate(response.json())
             return [RecipeStep.from_response(step) for step in recipe_step_response.steps]
 
     async def get_recipe_ingredients(self, recipe_id: UUID) -> List[RecipeIngredient]:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(headers=self.headers) as client:
             response = await client.get(f"{self.api_base}/papi/v1/recipes/{recipe_id}/ingredients")
             response.raise_for_status()
             recipe_ingredient_response = RecipeIngredientsResponse.model_validate(response.json())
