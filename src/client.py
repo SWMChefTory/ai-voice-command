@@ -1,11 +1,14 @@
 from abc import ABC, abstractmethod
+from uuid import UUID
+
 import httpx
 from uvicorn.main import logger
-from src.intent.models import Intent
+
+from src.context import country_code_ctx
 from src.enums import STTProvider
+from src.intent.models import Intent
 from src.schemas import VoiceCommandRequest
 from .config import voice_command_config
-from uuid import UUID
 
 class VoiceCommandClient(ABC):
     @abstractmethod
@@ -22,8 +25,11 @@ class CheftoryVoiceCommandClient(VoiceCommandClient):
 
     async def send_result(self, stt_provider: STTProvider, result: Intent, user_id: UUID, session_id: str, start: int, end: int):
         url = f"{self.config.api_base}/papi/v1/voice-command"
+        headers = {
+            "X-Country-Code": country_code_ctx.get(),
+        }
         try:
-            async with httpx.AsyncClient(headers=self.headers) as client:
+            async with httpx.AsyncClient(headers=headers) as client:
                 await client.post(
                 url,
                 json=VoiceCommandRequest.from_intent(result, user_id, stt_provider, session_id, start, end).model_dump()

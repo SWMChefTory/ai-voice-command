@@ -18,6 +18,7 @@ import nest_pb2_grpc as nest_pb2_grpc
 from src.stt.exceptions import NaverClovaStreamingClientException, OpenAIStreamingClientException, VitoStreamingClientException, STTErrorCode
 
 from .config import vito_config, naver_clova_config, openai_config
+from src.context import country_code_ctx
 
 class STTClient(ABC):
     @abstractmethod
@@ -165,9 +166,12 @@ class NaverClovaStreamingClient(STTClient):
             
             call = stub.recognize(metadata=metadata) # type: ignore
             
+            country_code = country_code_ctx.get()
+            stt_language = "ko" if country_code == "KR" else "en"
+
             config_json = {
                 "transcription": {
-                    "language": self._config.language
+                    "language": stt_language
                 },
                 "semanticEpd": {
                     "skipEmptyText": self._config.skip_empty_text,  
