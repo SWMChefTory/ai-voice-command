@@ -13,11 +13,14 @@ class CheftoryAuthClient(AuthClient):
     def __init__(self):
         super().__init__()
         self._config = auth_config
+        self.headers = {
+            "X-Country-Code": "KR",
+        }
 
     async def validate_auth_token(self, auth_token: str) -> UUID:
         url = f"{self._config.api_base}/papi/v1/auth/extract-user-id"
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(headers=self.headers) as client:
                 response = await client.post(
                     url,
                     headers={"Authorization": f"Bearer {auth_token}"},

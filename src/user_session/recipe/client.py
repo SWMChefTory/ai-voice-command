@@ -20,6 +20,9 @@ class RecipeClient(ABC):
 class RecipeCheftoryClient(RecipeClient):
     def __init__(self):
         self.api_base = recipe_config.api_base
+        self.headers = {
+            "X-Country-Code": "KR",
+        }
 
     async def get_recipe_steps(self, recipe_id: UUID) -> List[RecipeStep]:
         headers = {
@@ -33,6 +36,7 @@ class RecipeCheftoryClient(RecipeClient):
             return [RecipeStep.from_response(step) for step in recipe_step_response.steps]
 
     async def get_recipe_ingredients(self, recipe_id: UUID) -> List[RecipeIngredient]:
+
         headers = {
             "X-Country-Code": country_code_ctx.get(),
         }

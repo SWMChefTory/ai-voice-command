@@ -19,6 +19,9 @@ class CheftoryVoiceCommandClient(VoiceCommandClient):
 
     def __init__(self):
         self.config = voice_command_config
+        self.headers = {
+            "X-Country-Code": "KR",
+        }
 
     async def send_result(self, stt_provider: STTProvider, result: Intent, user_id: UUID, session_id: str, start: int, end: int):
         url = f"{self.config.api_base}/papi/v1/voice-command"
