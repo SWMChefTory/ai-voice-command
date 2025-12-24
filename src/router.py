@@ -7,6 +7,7 @@ from src.deps import voice_command_service
 from src.exceptions import VoiceCommandException
 from src.service import VoiceCommandService
 from src.enums import STTProvider
+from src.context import country_code_ctx, normalize_country_code
 
 router = APIRouter(prefix="/voice-command", tags=["Voice Command"])
 
@@ -19,6 +20,9 @@ async def websocket_endpoint(
     voice_command_service: VoiceCommandService = Depends(voice_command_service),
 ):
     session_id = None
+
+    raw_country_code = client_websocket.headers.get("X-Country-Code")
+    country_code_ctx.set(normalize_country_code(raw_country_code))
 
     await client_websocket.accept()
     
